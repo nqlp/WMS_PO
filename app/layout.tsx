@@ -1,0 +1,34 @@
+import type { Metadata } from 'next';
+import Script from 'next/script';
+
+import { AppNav } from '@/components/app-nav';
+import { env } from '@/lib/env';
+
+import './globals.css';
+
+export const metadata: Metadata = {
+  title: 'EZOKO Purchase Orders',
+  description: 'Embedded Shopify app for purchase order CRUD'
+};
+
+export default function RootLayout({
+  children
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <head>
+        <meta name="shopify-api-key" content={env.SHOPIFY_API_KEY} />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Script src="https://cdn.shopify.com/shopifycloud/app-bridge.js" strategy="beforeInteractive" />
+        <Script src="https://cdn.shopify.com/shopifycloud/app-home/polaris.js" strategy="beforeInteractive" />
+      </head>
+      <body>
+        <ui-title-bar title="EZOKO Purchase Orders" />
+        <AppNav />
+        <main>{children}</main>
+      </body>
+    </html>
+  );
+}
