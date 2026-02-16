@@ -18,12 +18,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <meta name="shopify-api-key" content={env.SHOPIFY_API_KEY} />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js" data-api-key={env.SHOPIFY_API_KEY} />
-        <script src="https://cdn.shopify.com/shopifycloud/app-home/polaris.js" />
-      </head>
+        <head>
+          <meta name="shopify-api-key" content={env.SHOPIFY_API_KEY} />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          {/* App Bridge requires synchronous CDN script loading */}
+          <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js" data-api-key={env.SHOPIFY_API_KEY} />
+          <script src="https://cdn.shopify.com/shopifycloud/app-home/polaris.js" />
+        </head>
       <body>
         <ui-title-bar title="EZOKO Purchase Orders" />
         <Suspense fallback={null}>

@@ -11,4 +11,11 @@ const compat = new FlatCompat({
 
 const config = [...compat.extends('next/core-web-vitals', 'next/typescript')];
 
+config.push({
+  files: ['app/layout.tsx'],
+  rules: {
+    '@next/next/no-sync-scripts': 'off'
+  }
+});
+
 export default config;
