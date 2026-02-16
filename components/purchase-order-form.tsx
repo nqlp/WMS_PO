@@ -148,7 +148,6 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
   const [vendorsFetched, setVendorsFetched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const showSpinner = bootstrap.loading || loadingVendors;
   const immutableBySku = useMemo(() => new Set(lines.filter((line) => line.sku.trim()).map((line) => line.rowId)), [lines]);
   const allVendorOptions = useMemo(() => {
     if (vendor && !vendorOptions.includes(vendor)) {
