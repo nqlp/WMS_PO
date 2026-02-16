@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 import { apiFetch } from '@/lib/client/api';
+import { withEmbeddedParams } from '@/lib/client/embedded-url';
 import { useEmbeddedBootstrap } from '@/lib/client/hooks';
 import { IMPORT_TYPES, PO_HEADER_STATUS } from '@/lib/constants';
 
@@ -99,6 +101,7 @@ function formatDate(value: string | null): string {
 }
 
 export function PurchaseOrderListPage() {
+  const searchParams = useSearchParams();
   const bootstrap = useEmbeddedBootstrap();
   const [vendors, setVendors] = useState<string[]>([]);
   const [filters, setFilters] = useState<FiltersState>(EMPTY_FILTERS);
@@ -441,7 +444,7 @@ export function PurchaseOrderListPage() {
               <button className="btn-neutral" type="button" onClick={() => void savePreferences()}>
                 Save as default
               </button>
-              <Link href="/purchase-orders/new" className="btn-neutral">
+              <Link href={withEmbeddedParams('/purchase-orders/new', searchParams)} className="btn-neutral">
                 New Purchase Order
               </Link>
             </div>
@@ -494,7 +497,10 @@ export function PurchaseOrderListPage() {
                             >
                               Check-in
                             </button>
-                            <Link href={`/purchase-orders/${row.poNumber}/edit`} className="btn-neutral">
+                            <Link
+                              href={withEmbeddedParams(`/purchase-orders/${row.poNumber}/edit`, searchParams)}
+                              className="btn-neutral"
+                            >
                               Modify
                             </Link>
                           </div>

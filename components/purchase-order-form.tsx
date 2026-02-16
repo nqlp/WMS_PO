@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 import { CURRENCIES, IMPORT_TYPES } from '@/lib/constants';
 import { apiFetch } from '@/lib/client/api';
+import { withEmbeddedParams } from '@/lib/client/embedded-url';
 import { useEmbeddedBootstrap } from '@/lib/client/hooks';
 
 interface PurchaseOrderItemDto {
@@ -106,6 +108,8 @@ function decimalText(value: string | number | null): string {
 
 export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }: PurchaseOrderFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const purchaseOrdersHref = withEmbeddedParams('/purchase-orders', searchParams);
   const bootstrap = useEmbeddedBootstrap();
 
   const [vendorOptions, setVendorOptions] = useState<string[]>([]);
@@ -425,7 +429,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         });
 
         setSuccessMessage(`Purchase order #${created.poNumber} created successfully.`);
-        router.push('/purchase-orders');
+        router.push(purchaseOrdersHref);
         router.refresh();
       } else {
         const poNumber = initialData?.poNumber;
@@ -798,7 +802,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
                   type="button"
                   className="btn-neutral"
                   onClick={() => {
-                    router.push('/purchase-orders');
+                    router.push(purchaseOrdersHref);
                   }}
                 >
                   Back to list
@@ -810,7 +814,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
                   type="button"
                   className="btn-neutral"
                   onClick={() => {
-                    router.push('/purchase-orders');
+                    router.push(purchaseOrdersHref);
                   }}
                 >
                   Back to list

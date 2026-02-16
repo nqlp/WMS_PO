@@ -4,12 +4,53 @@ export interface ApiFetchOptions extends RequestInit {
   csrfToken?: string;
 }
 
-async function getSessionToken(): Promise<string> {
-  if (!window.shopify?.idToken) {
-    throw new Error('Shopify App Bridge session token provider is not available');
+const APP_BRIDGE_WAIT_TIMEOUT_MS = 5000;
+const APP_BRIDGE_POLL_INTERVAL_MS = 50;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function appBridgeDebugInfo(): string {
+  const isEmbeddedIframe = window.self !== window.top;
+  const apiKey = document.querySelector('meta[name="shopify-api-key"]')?.getAttribute('content') ?? '';
+  const appBridgeScript = document.querySelector(
+    'script[src="https://cdn.shopify.com/shopifycloud/app-bridge.js"]'
+  );
+  const url = new URL(window.location.href);
+  const hasHostParam = Boolean(url.searchParams.get('host'));
+  const hasShopParam = Boolean(url.searchParams.get('shop'));
+
+  return [
+    `embeddedIframe=${isEmbeddedIframe}`,
+    `hasShopifyGlobal=${Boolean(window.shopify)}`,
+    `hasIdTokenProvider=${Boolean(window.shopify?.idToken)}`,
+    `hasApiKeyMeta=${Boolean(apiKey)}`,
+    `hasAppBridgeScriptTag=${Boolean(appBridgeScript)}`,
+    `hasHostParam=${hasHostParam}`,
+    `hasShopParam=${hasShopParam}`
+  ].join(", ");
+}
+
+async function getSessionTokenProvider(): Promise<() => Promise<string>> {
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < APP_BRIDGE_WAIT_TIMEOUT_MS) {
+    if (window.shopify?.idToken) {
+      return window.shopify.idToken;
+    }
+
+    await sleep(APP_BRIDGE_POLL_INTERVAL_MS);
   }
 
-  return window.shopify.idToken();
+  throw new Error(
+    `Shopify App Bridge session token provider is not available. Open the app from Shopify Admin (embedded iframe) and ensure app-bridge.js is loaded. Debug: ${appBridgeDebugInfo()}`
+  );
+}
+
+async function getSessionToken(): Promise<string> {
+  const idToken = await getSessionTokenProvider();
+  return idToken();
 }
 
 export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
