@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import Script from 'next/script';
 
 import { AppNav } from '@/components/app-nav';
 import { env } from '@/lib/env';
@@ -22,8 +21,8 @@ export default function RootLayout({
       <head>
         <meta name="shopify-api-key" content={env.SHOPIFY_API_KEY} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <Script src="https://cdn.shopify.com/shopifycloud/app-bridge.js" strategy="beforeInteractive" />
-        <Script src="https://cdn.shopify.com/shopifycloud/app-home/polaris.js" strategy="beforeInteractive" />
+        <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js" data-api-key={env.SHOPIFY_API_KEY} />
+        <script src="https://cdn.shopify.com/shopifycloud/app-home/polaris.js" />
       </head>
       <body>
         <ui-title-bar title="EZOKO Purchase Orders" />
