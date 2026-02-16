@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import { PurchaseOrderEditPage } from '@/components/purchase-order-edit-page';
 
 export default async function PurchaseOrderEditRoute({
@@ -6,5 +8,9 @@ export default async function PurchaseOrderEditRoute({
   params: Promise<{ poNumber: string }>;
 }) {
   const { poNumber } = await params;
-  return <PurchaseOrderEditPage poNumber={poNumber} />;
+  return (
+    <Suspense fallback={null}>
+      <PurchaseOrderEditPage poNumber={poNumber} />
+    </Suspense>
+  );
 }

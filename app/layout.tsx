@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import Script from 'next/script';
 
 import { AppNav } from '@/components/app-nav';
@@ -26,7 +27,9 @@ export default function RootLayout({
       </head>
       <body>
         <ui-title-bar title="EZOKO Purchase Orders" />
-        <AppNav />
+        <Suspense fallback={null}>
+          <AppNav />
+        </Suspense>
         <main>{children}</main>
       </body>
     </html>
