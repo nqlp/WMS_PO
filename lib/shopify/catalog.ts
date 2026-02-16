@@ -98,7 +98,7 @@ async function fetchAllVendorsFromShopify(session: AuthenticatedSession): Promis
   let cursor: string | null = null;
 
   for (;;) {
-    const data = await runShopifyGraphql<ProductsConnection>(
+    const data: ProductsConnection = await runShopifyGraphql<ProductsConnection>(
       session,
       `#graphql
       query VendorScan($cursor: String) {

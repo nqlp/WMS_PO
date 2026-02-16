@@ -32,7 +32,7 @@ export async function PUT(request: Request) {
   try {
     const session = await requireShopifySession(request);
     const body = (await request.json()) as unknown;
-    const parsed = parseOrThrow(userPrefsSchema, body, 'Invalid user preferences payload');
+    const parsed = parseOrThrow(userPrefsSchema, body, "Invalid user preferences payload");
 
     const prefs = await prisma.userPrefs.upsert({
       where: {
@@ -44,12 +44,12 @@ export async function PUT(request: Request) {
       create: {
         shop: session.shop,
         userId: session.userId,
-        filters: parsed.filters ?? null,
-        sorting: parsed.sorting ?? null
+        filters: parsed.filters ?? {},
+        sorting: parsed.sorting ?? {},
       },
       update: {
-        filters: parsed.filters ?? null,
-        sorting: parsed.sorting ?? null
+        filters: parsed.filters ?? {},
+        sorting: parsed.sorting ?? {}
       }
     });
 

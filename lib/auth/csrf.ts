@@ -7,23 +7,23 @@ import { ApiError } from '@/lib/http';
 const CSRF_TTL_SECONDS = 2 * 60 * 60;
 
 function csrfSecret(): Buffer {
-  const key = Buffer.from(env.TOKEN_ENCRYPTION_KEY, 'base64');
+  const key = Buffer.from(env.TOKEN_ENCRYPTION_KEY, "base64");
   if (key.length !== 32) {
-    throw new Error('TOKEN_ENCRYPTION_KEY must decode to 32 bytes');
+    throw new Error("TOKEN_ENCRYPTION_KEY must decode to 32 bytes");
   }
   return key;
 }
 
 function toBase64Url(value: string): string {
-  return Buffer.from(value, 'utf8').toString('base64url');
+  return Buffer.from(value, "utf8").toString("base64url");
 }
 
 function fromBase64Url(value: string): string {
-  return Buffer.from(value, 'base64url').toString('utf8');
+  return Buffer.from(value, "base64url").toString("utf8");
 }
 
 function sign(payloadBase64Url: string): string {
-  return createHmac('sha256', csrfSecret()).update(payloadBase64Url).digest('base64url');
+  return createHmac('sha256', csrfSecret()).update(payloadBase64Url).digest("base64url");
 }
 
 export function createCsrfToken(session: AuthenticatedSession): string {
@@ -31,7 +31,7 @@ export function createCsrfToken(session: AuthenticatedSession): string {
     shop: session.shop,
     userId: session.userId,
     exp: Math.floor(Date.now() / 1000) + CSRF_TTL_SECONDS,
-    nonce: randomBytes(12).toString('base64url')
+    nonce: randomBytes(12).toString("base64url")
   });
 
   const payloadBase64Url = toBase64Url(payload);
@@ -46,7 +46,11 @@ export function verifyCsrfToken(token: string, session: AuthenticatedSession): b
     return false;
   }
 
-  const [payloadBase64Url, providedSignature] = split;
+  const payloadBase64Url = split[0];
+  const providedSignature = split[1];
+  if (!payloadBase64Url || !providedSignature) {
+    return false;
+  }
   const expectedSignature = sign(payloadBase64Url);
 
   const providedBuffer = Buffer.from(providedSignature);
