@@ -597,7 +597,6 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
                   <tbody>
                     {lines.map((line, index) => {
                       const lockBySku = immutableBySku.has(line.rowId);
-                      const skuValidationLoading = validatingSkuRows.has(line.rowId);
                       const variants = variantPool[line.rowId] ?? [];
                       const variantSuggestions = variants.filter((variant) =>
                         variant.variantTitle.toLowerCase().includes(line.variantTitle.toLowerCase())
