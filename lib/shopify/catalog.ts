@@ -4,17 +4,12 @@ import { runShopifyGraphql } from '@/lib/shopify/graphql';
 
 const VENDOR_CACHE_TTL_MS = 30 * 60 * 1_000;
 
-interface ProductsConnection {
-  products: {
-    edges: Array<{
-      cursor: string;
-      node: {
-        vendor: string;
-      };
-    }>;
+interface ProductVendorsResponse {
+  productVendors: {
+    nodes: string[];
     pageInfo: {
       hasNextPage: boolean;
-      endCursor?: string | null;
+      endCursor: string | null;
     };
   };
 }
@@ -92,45 +87,38 @@ function toVariantTitle(selectedOptions: Array<{ name: string; value: string }>,
   }
   return values.join(' - ');
 }
-
 async function fetchAllVendorsFromShopify(session: AuthenticatedSession): Promise<string[]> {
   const vendors = new Set<string>();
-  let cursor: string | null = null;
+  let after: string | null = null;
 
-  for (;;) {
-    const data: ProductsConnection = await runShopifyGraphql<ProductsConnection>(
+  for (; ;) {
+    const data: ProductVendorsResponse = await runShopifyGraphql<ProductVendorsResponse>(
       session,
       `#graphql
-      query VendorScan($cursor: String) {
-        products(first: 250, after: $cursor) {
-          edges {
-            cursor
-            node {
-              vendor
-            }
-          }
+      query Vendors($first: Int!, $after: String) {
+        productVendors(first: $first, after: $after) {
+          nodes
           pageInfo {
             hasNextPage
             endCursor
           }
         }
-      }
-      `,
-      { cursor }
+      }`,
+      { first: 250, after }
     );
 
-    for (const edge of data.products.edges) {
-      const vendor = edge.node.vendor.trim();
+    for (const node of data.productVendors.nodes) {
+      const vendor = node.trim();
       if (vendor) {
         vendors.add(vendor);
       }
     }
 
-    if (!data.products.pageInfo.hasNextPage || !data.products.pageInfo.endCursor) {
+    if (!data.productVendors.pageInfo.hasNextPage) {
       break;
     }
 
-    cursor = data.products.pageInfo.endCursor;
+    after = data.productVendors.pageInfo.endCursor;
   }
 
   return [...vendors].sort((a, b) => a.localeCompare(b));

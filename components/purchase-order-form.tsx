@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
-
 import { CURRENCIES, IMPORT_TYPES } from '@/lib/constants';
 import { apiFetch } from '@/lib/client/api';
 import { withEmbeddedParams } from '@/lib/client/embedded-url';
-import { useEmbeddedBootstrap } from '@/lib/client/hooks';
+import { useEmbeddedBootstrap, useVendors } from '@/lib/client/hooks';
 
 interface PurchaseOrderItemDto {
   poItem: number;
@@ -112,10 +111,10 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
   const purchaseOrdersHref = withEmbeddedParams('/purchase-orders', searchParams);
   const bootstrap = useEmbeddedBootstrap();
 
-  const [vendorOptions, setVendorOptions] = useState<string[]>([]);
-  const [vendor, setVendor] = useState(initialData?.vendor ?? '');
+  const { allVendorOptions, loading: loadingVendors } = useVendors();
+  const [vendor, setVendor] = useState(initialData?.vendor ?? "");
   const [importDuties, setImportDuties] = useState(initialData?.importDuties ?? false);
-  const [importType, setImportType] = useState(initialData?.importType ?? 'NO_IMPORT');
+  const [importType, setImportType] = useState(initialData?.importType ?? "NO_IMPORT");
   const [expectedDate, setExpectedDate] = useState(initialData?.expectedDate?.slice(0, 10) ?? '');
   const [shippingFees, setShippingFees] = useState(decimalText(initialData?.shippingFees ?? null));
   const [shippingFeesCurrency, setShippingFeesCurrency] = useState(
@@ -126,20 +125,20 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
   const [lines, setLines] = useState<FormLine[]>(
     initialData?.items?.length
       ? initialData.items.map((item) => ({
-          rowId: lineId(),
-          existingPoItem: item.poItem,
-          sku: item.sku ?? '',
-          productId: null,
-          productTitle: item.productTitle,
-          variantId: null,
-          variantTitle: item.variantTitle,
-          orderQty: String(item.orderQty),
-          unitCost: decimalText(item.unitCost),
-          unitCostCurrency: item.unitCostCurrency ?? DEFAULT_CURRENCY,
-          hsCode: item.hsCode ?? '',
-          coo: item.coo ?? '',
-          skuError: null
-        }))
+        rowId: lineId(),
+        existingPoItem: item.poItem,
+        sku: item.sku ?? '',
+        productId: null,
+        productTitle: item.productTitle,
+        variantId: null,
+        variantTitle: item.variantTitle,
+        orderQty: String(item.orderQty),
+        unitCost: decimalText(item.unitCost),
+        unitCostCurrency: item.unitCostCurrency ?? DEFAULT_CURRENCY,
+        hsCode: item.hsCode ?? '',
+        coo: item.coo ?? '',
+        skuError: null
+      }))
       : [emptyLine()]
   );
 
@@ -148,48 +147,9 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
   const [headerError, setHeaderError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [loadingVendors, setLoadingVendors] = useState(false);
-  const [vendorsFetched, setVendorsFetched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const immutableBySku = useMemo(() => new Set(lines.filter((line) => line.sku.trim()).map((line) => line.rowId)), [lines]);
-  const allVendorOptions = useMemo(() => {
-    if (vendor && !vendorOptions.includes(vendor)) {
-      return [vendor, ...vendorOptions];
-    }
-    return vendorOptions;
-  }, [vendor, vendorOptions]);
-
-  useEffect(() => {
-    if (loadingVendors || bootstrap.loading || bootstrap.error || vendorOptions.length > 0 || vendorsFetched) {
-      return;
-    }
-
-    let mounted = true;
-
-    (async () => {
-      try {
-        setLoadingVendors(true);
-        const response = await apiFetch<{ vendors: string[] }>('/api/shopify/vendors');
-        if (mounted) {
-          setVendorOptions(response.vendors);
-        }
-      } catch {
-        if (mounted) {
-          setVendorOptions([]);
-        }
-      } finally {
-        if (mounted) {
-          setLoadingVendors(false);
-          setVendorsFetched(true);
-        }
-      }
-    })();
-
-    return () => {
-      mounted = false;
-    };
-  }, [bootstrap.error, bootstrap.loading, loadingVendors, vendorOptions.length, vendorsFetched]);
 
   function updateLine(rowId: string, updater: (line: FormLine) => FormLine) {
     setLines((prev) => prev.map((line) => (line.rowId === rowId ? updater(line) : line)));
@@ -485,14 +445,17 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
                   disabled={readOnly}
                   onChange={(event) => setVendor(event.target.value)}
                 >
-                  <option value="">Select vendor</option>
-                  <option value="shimano">Shimano</option>
+                  <option value="" disabled>
+                    {loadingVendors ? 'Loading vendors...' : "Select Vendor"}
+                  </option>
+
                   {allVendorOptions.map((option) => (
                     <option key={option} value={option}>
                       {option}
                     </option>
                   ))}
                 </select>
+
               </div>
 
               <div className="col-4">
@@ -609,185 +572,185 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
                   </thead>
                   <tbody>
                     {lines.map((line, index) => {
-                    const lockBySku = immutableBySku.has(line.rowId);
-                    const variants = variantPool[line.rowId] ?? [];
-                    const variantSuggestions = variants.filter((variant) =>
-                      variant.variantTitle.toLowerCase().includes(line.variantTitle.toLowerCase())
-                    );
+                      const lockBySku = immutableBySku.has(line.rowId);
+                      const variants = variantPool[line.rowId] ?? [];
+                      const variantSuggestions = variants.filter((variant) =>
+                        variant.variantTitle.toLowerCase().includes(line.variantTitle.toLowerCase())
+                      );
 
-                    return (
-                      <tr key={line.rowId}>
-                        <td>{index + 1}</td>
-                        <td>
-                          <input
-                            className="field"
-                            value={line.sku}
-                            disabled={readOnly}
-                            onChange={(event) => {
-                              const value = event.target.value;
-                              updateLine(line.rowId, (current) => ({
-                                ...current,
-                                sku: value,
-                                skuError: null,
-                                ...(value ? {} : { productId: null, variantId: null })
-                              }));
-                            }}
-                            onBlur={() => {
-                              if (line.sku.trim()) {
-                                void validateSkuForLine(line.rowId);
-                              }
-                            }}
-                          />
-                          {line.skuError ? <div className="error-text">{line.skuError}</div> : null}
-                        </td>
-
-                        <td>
-                          <div className="autocomplete">
+                      return (
+                        <tr key={line.rowId}>
+                          <td>{index + 1}</td>
+                          <td>
                             <input
                               className="field"
-                              value={line.productTitle}
-                              disabled={readOnly || lockBySku}
+                              value={line.sku}
+                              disabled={readOnly}
                               onChange={(event) => {
                                 const value = event.target.value;
                                 updateLine(line.rowId, (current) => ({
                                   ...current,
-                                  productTitle: value,
-                                  productId: null,
-                                  variantId: null,
-                                  variantTitle: ''
+                                  sku: value,
+                                  skuError: null,
+                                  ...(value ? {} : { productId: null, variantId: null })
                                 }));
-                                void searchProducts(line.rowId, value);
+                              }}
+                              onBlur={() => {
+                                if (line.sku.trim()) {
+                                  void validateSkuForLine(line.rowId);
+                                }
                               }}
                             />
-                            {!readOnly && !lockBySku && (productSuggestions[line.rowId]?.length ?? 0) > 0 ? (
-                              <div className="autocomplete-panel">
-                                {productSuggestions[line.rowId]!.map((product) => (
-                                  <button
-                                    key={product.id}
-                                    type="button"
-                                    className="autocomplete-item"
-                                    onClick={() => {
-                                      void selectProduct(line.rowId, product);
-                                    }}
-                                  >
-                                    {product.title} ({product.vendor})
-                                  </button>
-                                ))}
-                              </div>
-                            ) : null}
-                          </div>
-                        </td>
+                            {line.skuError ? <div className="error-text">{line.skuError}</div> : null}
+                          </td>
 
-                        <td>
-                          <div className="autocomplete">
+                          <td>
+                            <div className="autocomplete">
+                              <input
+                                className="field"
+                                value={line.productTitle}
+                                disabled={readOnly || lockBySku}
+                                onChange={(event) => {
+                                  const value = event.target.value;
+                                  updateLine(line.rowId, (current) => ({
+                                    ...current,
+                                    productTitle: value,
+                                    productId: null,
+                                    variantId: null,
+                                    variantTitle: ''
+                                  }));
+                                  void searchProducts(line.rowId, value);
+                                }}
+                              />
+                              {!readOnly && !lockBySku && (productSuggestions[line.rowId]?.length ?? 0) > 0 ? (
+                                <div className="autocomplete-panel">
+                                  {productSuggestions[line.rowId]!.map((product) => (
+                                    <button
+                                      key={product.id}
+                                      type="button"
+                                      className="autocomplete-item"
+                                      onClick={() => {
+                                        void selectProduct(line.rowId, product);
+                                      }}
+                                    >
+                                      {product.title} ({product.vendor})
+                                    </button>
+                                  ))}
+                                </div>
+                              ) : null}
+                            </div>
+                          </td>
+
+                          <td>
+                            <div className="autocomplete">
+                              <input
+                                className="field"
+                                value={line.variantTitle}
+                                disabled={readOnly || lockBySku}
+                                onChange={(event) => {
+                                  updateLine(line.rowId, (current) => ({
+                                    ...current,
+                                    variantTitle: event.target.value,
+                                    variantId: null
+                                  }));
+                                }}
+                              />
+                              {!readOnly && !lockBySku && variantSuggestions.length > 0 ? (
+                                <div className="autocomplete-panel">
+                                  {variantSuggestions.slice(0, 20).map((variant) => (
+                                    <button
+                                      key={variant.id}
+                                      type="button"
+                                      className="autocomplete-item"
+                                      onClick={() => selectVariant(line.rowId, variant)}
+                                    >
+                                      {variant.variantTitle}
+                                    </button>
+                                  ))}
+                                </div>
+                              ) : null}
+                            </div>
+                          </td>
+
+                          <td>
                             <input
                               className="field"
-                              value={line.variantTitle}
-                              disabled={readOnly || lockBySku}
-                              onChange={(event) => {
+                              type="number"
+                              min="1"
+                              step="1"
+                              value={line.orderQty}
+                              disabled={readOnly}
+                              onChange={(event) =>
+                                updateLine(line.rowId, (current) => ({ ...current, orderQty: event.target.value }))
+                              }
+                            />
+                          </td>
+
+                          <td>
+                            <input
+                              className="field"
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={line.unitCost}
+                              disabled={readOnly}
+                              onChange={(event) =>
+                                updateLine(line.rowId, (current) => ({ ...current, unitCost: event.target.value }))
+                              }
+                            />
+                          </td>
+
+                          <td>
+                            <select
+                              value={line.unitCostCurrency}
+                              disabled={readOnly}
+                              onChange={(event) =>
+                                updateLine(line.rowId, (current) => ({ ...current, unitCostCurrency: event.target.value }))
+                              }
+                            >
+                              {CURRENCIES.map((currency) => (
+                                <option key={currency} value={currency}>
+                                  {currency}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+
+                          <td>
+                            <input
+                              className="field"
+                              value={line.hsCode}
+                              disabled={readOnly}
+                              onChange={(event) =>
+                                updateLine(line.rowId, (current) => ({ ...current, hsCode: event.target.value }))
+                              }
+                            />
+                          </td>
+
+                          <td>
+                            <input
+                              className="field"
+                              value={line.coo}
+                              maxLength={2}
+                              disabled={readOnly}
+                              onChange={(event) =>
                                 updateLine(line.rowId, (current) => ({
                                   ...current,
-                                  variantTitle: event.target.value,
-                                  variantId: null
-                                }));
-                              }}
+                                  coo: event.target.value.toUpperCase()
+                                }))
+                              }
                             />
-                            {!readOnly && !lockBySku && variantSuggestions.length > 0 ? (
-                              <div className="autocomplete-panel">
-                                {variantSuggestions.slice(0, 20).map((variant) => (
-                                  <button
-                                    key={variant.id}
-                                    type="button"
-                                    className="autocomplete-item"
-                                    onClick={() => selectVariant(line.rowId, variant)}
-                                  >
-                                    {variant.variantTitle}
-                                  </button>
-                                ))}
-                              </div>
+                          </td>
+
+                          <td>
+                            {!readOnly ? (
+                              <button className="btn-danger" type="button" onClick={() => removeLine(line.rowId)}>
+                                Remove
+                              </button>
                             ) : null}
-                          </div>
-                        </td>
-
-                        <td>
-                          <input
-                            className="field"
-                            type="number"
-                            min="1"
-                            step="1"
-                            value={line.orderQty}
-                            disabled={readOnly}
-                            onChange={(event) =>
-                              updateLine(line.rowId, (current) => ({ ...current, orderQty: event.target.value }))
-                            }
-                          />
-                        </td>
-
-                        <td>
-                          <input
-                            className="field"
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={line.unitCost}
-                            disabled={readOnly}
-                            onChange={(event) =>
-                              updateLine(line.rowId, (current) => ({ ...current, unitCost: event.target.value }))
-                            }
-                          />
-                        </td>
-
-                        <td>
-                          <select
-                            value={line.unitCostCurrency}
-                            disabled={readOnly}
-                            onChange={(event) =>
-                              updateLine(line.rowId, (current) => ({ ...current, unitCostCurrency: event.target.value }))
-                            }
-                          >
-                            {CURRENCIES.map((currency) => (
-                              <option key={currency} value={currency}>
-                                {currency}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-
-                        <td>
-                          <input
-                            className="field"
-                            value={line.hsCode}
-                            disabled={readOnly}
-                            onChange={(event) =>
-                              updateLine(line.rowId, (current) => ({ ...current, hsCode: event.target.value }))
-                            }
-                          />
-                        </td>
-
-                        <td>
-                          <input
-                            className="field"
-                            value={line.coo}
-                            maxLength={2}
-                            disabled={readOnly}
-                            onChange={(event) =>
-                              updateLine(line.rowId, (current) => ({
-                                ...current,
-                                coo: event.target.value.toUpperCase()
-                              }))
-                            }
-                          />
-                        </td>
-
-                        <td>
-                          {!readOnly ? (
-                            <button className="btn-danger" type="button" onClick={() => removeLine(line.rowId)}>
-                              Remove
-                            </button>
-                          ) : null}
-                        </td>
-                      </tr>
-                    );
+                          </td>
+                        </tr>
+                      );
                     })}
                   </tbody>
                 </table>

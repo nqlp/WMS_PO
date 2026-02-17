@@ -92,3 +92,8 @@ export async function fetchCsrfToken(): Promise<string> {
 export async function ensureTokenExchange(): Promise<void> {
   await apiFetch<{ ok: boolean }>('/api/auth/token-exchange');
 }
+
+export async function fetchVendors(): Promise<string[]> {
+  const data = await apiFetch<{ vendors: string[] }>('/api/shopify/vendors');
+  return data.vendors;
+}

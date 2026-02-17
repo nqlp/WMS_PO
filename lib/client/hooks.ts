@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
-import { ensureTokenExchange, fetchCsrfToken } from '@/lib/client/api';
+import { useEffect, useMemo, useState } from 'react';
+import { ensureTokenExchange, fetchCsrfToken, fetchVendors } from '@/lib/client/api';
 
 export function useEmbeddedBootstrap() {
   const [loading, setLoading] = useState(true);
@@ -40,4 +39,52 @@ export function useEmbeddedBootstrap() {
     error,
     csrfToken
   };
+}
+
+export function useVendors(enabled: boolean = true, currentVendor?: string) {
+  const [vendorOptions, setVendorOptions] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [fetched, setFetched] = useState(false);
+
+  useEffect(() => {
+    if (!enabled || loading || fetched) {
+      return;
+    }
+
+    let isMounted = true;
+
+    (async () => {
+      try {
+        setLoading(true);
+        const response = await fetchVendors();
+        if (isMounted) {
+          setVendorOptions(response);
+          setFetched(true);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setVendorOptions([]);
+          console.error('Failed to fetch vendors:', error);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+          setFetched(true);
+        }
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [enabled, loading, fetched]);
+
+  const allVendorOptions = useMemo(() => {
+    if (currentVendor && !vendorOptions.includes(currentVendor)) {
+      return [currentVendor, ...vendorOptions];
+    }
+    return vendorOptions;
+  }, [currentVendor, vendorOptions]);
+
+  return { allVendorOptions, loading };
 }
