@@ -147,12 +147,14 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
 
   const [productSuggestions, setProductSuggestions] = useState<Record<string, ProductOption[]>>({});
   const [variantPool, setVariantPool] = useState<Record<string, VariantOption[]>>({});
+  const [validatingSkuRows, setValidatingSkuRows] = useState<Set<string>>(new Set());
   const [headerError, setHeaderError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const immutableBySku = useMemo(() => new Set(lines.filter((line) => line.sku.trim()).map((line) => line.rowId)), [lines]);
+  const isSkuValidationLoading = validatingSkuRows.size > 0;
 
   function updateLine(rowId: string, updater: (line: FormLine) => FormLine) {
     setLines((prev) => prev.map((line) => (line.rowId === rowId ? updater(line) : line)));
@@ -194,6 +196,11 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
     }
 
     try {
+      setValidatingSkuRows((prev) => {
+        const next = new Set(prev);
+        next.add(rowId);
+        return next;
+      });
       const payload = await apiFetch<{
         matches: Array<{
           variantId: string;
@@ -238,6 +245,12 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         ...line,
         skuError: error instanceof Error ? error.message : 'Unable to validate SKU'
       }));
+    } finally {
+      setValidatingSkuRows((prev) => {
+        const next = new Set(prev);
+        next.delete(rowId);
+        return next;
+      });
     }
   }
 
@@ -425,7 +438,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
   }
 
   return (
-    <div className="page-shell layout-col">
+    <div className={`page-shell layout-col${isSkuValidationLoading ? "is-sku-loading" : ""}`}>
       <s-page>
         <s-section>
           <div className="panel layout-col">

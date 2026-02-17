@@ -299,3 +299,8 @@ tr:last-child td {
   border-radius: 10px;
   margin-bottom: 1rem;
 }
+
+.is-sku-loading,
+.is-sku-loading * {
+  cursor: progress !important;
+}
