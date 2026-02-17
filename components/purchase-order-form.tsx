@@ -111,8 +111,11 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
   const purchaseOrdersHref = withEmbeddedParams('/purchase-orders', searchParams);
   const bootstrap = useEmbeddedBootstrap();
 
-  const { allVendorOptions, loading: loadingVendors } = useVendors();
   const [vendor, setVendor] = useState(initialData?.vendor ?? "");
+  const { allVendorOptions, loading: loadingVendors } = useVendors(
+    !bootstrap.loading && !bootstrap.error,
+    vendor
+  );
   const [importDuties, setImportDuties] = useState(initialData?.importDuties ?? false);
   const [importType, setImportType] = useState(initialData?.importType ?? "NO_IMPORT");
   const [expectedDate, setExpectedDate] = useState(initialData?.expectedDate?.slice(0, 10) ?? '');
@@ -446,7 +449,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
                   onChange={(event) => setVendor(event.target.value)}
                 >
                   <option value="" disabled>
-                    {loadingVendors ? 'Loading vendors...' : "Select Vendor"}
+                    {loadingVendors ? "Loading vendors..." : "Select Vendor"}
                   </option>
 
                   {allVendorOptions.map((option) => (

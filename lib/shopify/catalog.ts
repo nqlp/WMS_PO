@@ -114,11 +114,12 @@ async function fetchAllVendorsFromShopify(session: AuthenticatedSession): Promis
       }
     }
 
-    if (!data.productVendors.pageInfo.hasNextPage) {
+    const { hasNextPage, endCursor } = data.productVendors.pageInfo;
+    if (!hasNextPage || !endCursor) {
       break;
     }
 
-    after = data.productVendors.pageInfo.endCursor;
+    after = endCursor;
   }
 
   return [...vendors].sort((a, b) => a.localeCompare(b));
