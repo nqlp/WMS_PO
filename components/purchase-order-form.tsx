@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
 import { CURRENCIES, IMPORT_TYPES } from '@/lib/constants';
@@ -155,6 +155,14 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
 
   const immutableBySku = useMemo(() => new Set(lines.filter((line) => line.sku.trim()).map((line) => line.rowId)), [lines]);
   const isSkuValidationLoading = validatingSkuRows.size > 0;
+
+  useEffect(() => {
+    document.body.classList.toggle('sku-loading-cursor', isSkuValidationLoading);
+
+    return () => {
+      document.body.classList.remove('sku-loading-cursor');
+    };
+  }, [isSkuValidationLoading]);
 
   function updateLine(rowId: string, updater: (line: FormLine) => FormLine) {
     setLines((prev) => prev.map((line) => (line.rowId === rowId ? updater(line) : line)));
@@ -589,6 +597,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
                   <tbody>
                     {lines.map((line, index) => {
                       const lockBySku = immutableBySku.has(line.rowId);
+                      const skuValidationLoading = validatingSkuRows.has(line.rowId);
                       const variants = variantPool[line.rowId] ?? [];
                       const variantSuggestions = variants.filter((variant) =>
                         variant.variantTitle.toLowerCase().includes(line.variantTitle.toLowerCase())

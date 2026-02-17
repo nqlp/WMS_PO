@@ -304,3 +304,8 @@ tr:last-child td {
 .is-sku-loading * {
   cursor: progress !important;
 }
+
+body.sku-loading-cursor,
+body.sku-loading-cursor * {
+  cursor: progress !important;
+}
