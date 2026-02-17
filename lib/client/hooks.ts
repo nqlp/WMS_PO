@@ -47,7 +47,7 @@ export function useVendors(enabled: boolean = true, currentVendor?: string) {
   const [fetched, setFetched] = useState(false);
 
   useEffect(() => {
-    if (!enabled || loading || fetched) {
+    if (!enabled || fetched) {
       return;
     }
 
@@ -77,7 +77,7 @@ export function useVendors(enabled: boolean = true, currentVendor?: string) {
     return () => {
       isMounted = false;
     };
-  }, [enabled, loading, fetched]);
+  }, [enabled, fetched]);
 
   const allVendorOptions = useMemo(() => {
     if (currentVendor && !vendorOptions.includes(currentVendor)) {
