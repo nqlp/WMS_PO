@@ -486,6 +486,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
                   onChange={(event) => setVendor(event.target.value)}
                 >
                   <option value="">Select vendor</option>
+                  <option value="shimano">Shimano</option>
                   {allVendorOptions.map((option) => (
                     <option key={option} value={option}>
                       {option}
