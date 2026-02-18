@@ -72,7 +72,7 @@ interface PurchaseOrderFormProps {
   readOnly?: boolean;
 }
 
-const DEFAULT_CURRENCY = 'CAD';
+const DEFAULT_CURRENCY = "CAD";
 
 function lineId(): string {
   return Math.random().toString(36).slice(2, 12);
@@ -186,10 +186,10 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
   const isSkuValidationLoading = validatingSkuRows.size > 0;
 
   useEffect(() => {
-    document.body.classList.toggle('sku-loading-cursor', isSkuValidationLoading);
+    document.body.classList.toggle("sku-loading-cursor", isSkuValidationLoading);
 
     return () => {
-      document.body.classList.remove('sku-loading-cursor');
+      document.body.classList.remove("sku-loading-cursor");
     };
   }, [isSkuValidationLoading]);
 
@@ -301,7 +301,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
     } catch (error) {
       updateLine(rowId, (line) => ({
         ...line,
-        skuError: error instanceof Error ? error.message : 'Unable to validate SKU'
+        skuError: error instanceof Error ? error.message : "Unable to validate SKU"
       }));
     } finally {
       setValidatingSkuRows((prev) => {
@@ -531,8 +531,9 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
               This purchase order is archived and cannot be modified. Fields are shown in read-only mode.
             </s-banner>
           ) : null}
-          {headerError ? <s-banner tone="critical">{headerError}</s-banner> : null}
-          {submitError ? <s-banner tone="critical">{submitError}</s-banner> : null}
+          {(headerError || submitError) ? (
+            <s-banner tone="critical">{submitError ?? headerError}</s-banner>
+          ) : null}
           {successMessage ? <s-banner tone="success">{successMessage}</s-banner> : null}
 
           <s-query-container>
@@ -625,6 +626,22 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
               </s-box>
             </s-grid>
           </s-query-container>
+          <s-stack direction="inline" gap="small">
+            {!readOnly ? (
+              <s-button type="button" variant="primary" onClick={() => void submit()} disabled={submitting}>
+                {submitting ? "Saving..." : mode === "create" ? "Create Purchase Order" : "Save Changes"}
+              </s-button>
+            ) : null}
+            <s-button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                router.push(purchaseOrdersHref);
+              }}
+            >
+              Back to list
+            </s-button>
+          </s-stack>
         </s-stack>
       </s-section>
       <ItemGrids
@@ -645,39 +662,6 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         setActiveProductPopoverRowId={setActiveProductPopoverRowId}
         setActiveVariantPopoverRowId={setActiveVariantPopoverRowId}
       />
-      <s-section>
-        {(headerError || submitError) ? (
-          <s-banner tone="critical">{submitError ?? headerError}</s-banner>
-        ) : null}
-        {!readOnly ? (
-          <s-stack direction="inline" gap="small">
-            <s-button type="button" variant="primary" onClick={() => void submit()} disabled={submitting}>
-              {submitting ? 'Saving...' : mode === 'create' ? 'Create Purchase Order' : 'Save Changes'}
-            </s-button>
-            <s-button
-              type="button"
-              variant="secondary"
-              onClick={() => {
-                router.push(purchaseOrdersHref);
-              }}
-            >
-              Back to list
-            </s-button>
-          </s-stack>
-        ) : (
-          <s-stack direction="inline" gap="small">
-            <s-button
-              type="button"
-              variant="secondary"
-              onClick={() => {
-                router.push(purchaseOrdersHref);
-              }}
-            >
-              Back to list
-            </s-button>
-          </s-stack>
-        )}
-      </s-section>
     </s-page>
   );
 }

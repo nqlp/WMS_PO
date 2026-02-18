@@ -5,3 +5,4 @@ node_modules
 coverage
 prisma/dev.db
 .DS_Store
+tsconfig.tsbuildinfo

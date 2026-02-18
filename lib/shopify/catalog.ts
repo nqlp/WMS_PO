@@ -96,7 +96,7 @@ function toVariantTitle(selectedOptions: Array<{ name: string; value: string }>,
   if (values.length === 0) {
     return fallback;
   }
-  return values.join(' - ');
+  return values.join(" - ");
 }
 async function fetchAllVendorsFromShopify(session: AuthenticatedSession): Promise<string[]> {
   const vendors = new Set<string>();
@@ -144,7 +144,7 @@ export async function getVendors(session: AuthenticatedSession): Promise<string[
   if (cached && Date.now() - cached.refreshedAt.getTime() < VENDOR_CACHE_TTL_MS) {
     const vendors = cached.vendors;
     if (Array.isArray(vendors)) {
-      return vendors.filter((entry): entry is string => typeof entry === 'string');
+      return vendors.filter((entry): entry is string => typeof entry === "string");
     }
   }
 

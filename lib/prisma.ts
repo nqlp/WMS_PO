@@ -4,7 +4,6 @@ import { Pool } from 'pg'
 
 declare global {
   var prisma: PrismaClient | undefined;
-  // eslint-disable-next-line no-var, vars-on-top
   var pool: Pool | undefined;
 }
 // Connection pool for PostgreSQL
