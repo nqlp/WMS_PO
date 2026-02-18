@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -7,6 +7,7 @@ import { CURRENCIES, IMPORT_TYPES } from '@/lib/constants';
 import { apiFetch } from '@/lib/client/api';
 import { withEmbeddedParams } from '@/lib/client/embedded-url';
 import { useEmbeddedBootstrap, useVendors } from '@/lib/client/hooks';
+import { ItemGrids } from '@/components/ItemGrids';
 
 interface PurchaseOrderItemDto {
   poItem: number;
@@ -33,21 +34,21 @@ export interface PurchaseOrderDto {
   items: PurchaseOrderItemDto[];
 }
 
-interface ProductOption {
+export interface ProductOption {
   id: string;
   title: string;
   vendor: string;
   variants: VariantOption[];
 }
 
-interface VariantOption {
+export interface VariantOption {
   id: string;
   sku: string | null;
   title: string;
   variantTitle: string;
 }
 
-interface FormLine {
+export interface FormLine {
   rowId: string;
   existingPoItem?: number;
   sku: string;
@@ -105,19 +106,41 @@ function decimalText(value: string | number | null): string {
   return value;
 }
 
+function eventValue(event: unknown): string {
+  const currentValue = (event as { currentTarget?: { value?: unknown } }).currentTarget?.value;
+  if (typeof currentValue === "string") {
+    return currentValue;
+  }
+
+  if (typeof currentValue === "number") {
+    return String(currentValue);
+  }
+
+  const targetValue = (event as { target?: { value?: unknown } }).target?.value;
+  if (typeof targetValue === "string") {
+    return targetValue;
+  }
+
+  if (typeof targetValue === "number") {
+    return String(targetValue);
+  }
+
+  return "";
+}
+
 export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }: PurchaseOrderFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const purchaseOrdersHref = withEmbeddedParams('/purchase-orders', searchParams);
   const bootstrap = useEmbeddedBootstrap();
 
-  const [vendor, setVendor] = useState(initialData?.vendor ?? "");
+  const [vendor, setVendor] = useState(initialData?.vendor ?? '');
   const { allVendorOptions, loading: loadingVendors } = useVendors(
     !bootstrap.loading && !bootstrap.error,
     vendor
   );
   const [importDuties, setImportDuties] = useState(initialData?.importDuties ?? false);
-  const [importType, setImportType] = useState(initialData?.importType ?? "NO_IMPORT");
+  const [importType, setImportType] = useState(initialData?.importType ?? 'NO_IMPORT');
   const [expectedDate, setExpectedDate] = useState(initialData?.expectedDate?.slice(0, 10) ?? '');
   const [shippingFees, setShippingFees] = useState(decimalText(initialData?.shippingFees ?? null));
   const [shippingFeesCurrency, setShippingFeesCurrency] = useState(
@@ -147,13 +170,18 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
 
   const [productSuggestions, setProductSuggestions] = useState<Record<string, ProductOption[]>>({});
   const [variantPool, setVariantPool] = useState<Record<string, VariantOption[]>>({});
+  const [activeProductPopoverRowId, setActiveProductPopoverRowId] = useState<string | null>(null);
+  const [activeVariantPopoverRowId, setActiveVariantPopoverRowId] = useState<string | null>(null);
   const [validatingSkuRows, setValidatingSkuRows] = useState<Set<string>>(new Set());
   const [headerError, setHeaderError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const immutableBySku = useMemo(() => new Set(lines.filter((line) => line.sku.trim()).map((line) => line.rowId)), [lines]);
+  const immutableBySku = useMemo(
+    () => new Set(lines.filter((line) => line.sku.trim()).map((line) => line.rowId)),
+    [lines]
+  );
   const isSkuValidationLoading = validatingSkuRows.size > 0;
 
   useEffect(() => {
@@ -189,6 +217,8 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       delete next[rowId];
       return next;
     });
+    setActiveProductPopoverRowId((prev) => (prev === rowId ? null : prev));
+    setActiveVariantPopoverRowId((prev) => (prev === rowId ? null : prev));
   }
 
   async function validateSkuForLine(rowId: string) {
@@ -248,6 +278,8 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
 
       setProductSuggestions((prev) => ({ ...prev, [rowId]: [] }));
       setVariantPool((prev) => ({ ...prev, [rowId]: [] }));
+      setActiveProductPopoverRowId((prev) => (prev === rowId ? null : prev));
+      setActiveVariantPopoverRowId((prev) => (prev === rowId ? null : prev));
     } catch (error) {
       updateLine(rowId, (line) => ({
         ...line,
@@ -265,6 +297,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
   async function searchProducts(rowId: string, query: string) {
     if (query.trim().length < 2) {
       setProductSuggestions((prev) => ({ ...prev, [rowId]: [] }));
+      setActiveProductPopoverRowId((prev) => (prev === rowId ? null : prev));
       return;
     }
 
@@ -273,8 +306,10 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         `/api/shopify/products/search?q=${encodeURIComponent(query)}`
       );
       setProductSuggestions((prev) => ({ ...prev, [rowId]: payload.products }));
+      setActiveProductPopoverRowId(rowId);
     } catch {
       setProductSuggestions((prev) => ({ ...prev, [rowId]: [] }));
+      setActiveProductPopoverRowId((prev) => (prev === rowId ? null : prev));
     }
   }
 
@@ -288,6 +323,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
     }));
 
     setProductSuggestions((prev) => ({ ...prev, [rowId]: [] }));
+    setActiveProductPopoverRowId((prev) => (prev === rowId ? null : prev));
 
     try {
       const payload = await apiFetch<{ variants: VariantOption[] }>(
@@ -307,6 +343,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       sku: line.sku || variant.sku || '',
       skuError: null
     }));
+    setActiveVariantPopoverRowId((prev) => (prev === rowId ? null : prev));
   }
 
   function validateBeforeSubmit(): boolean {
@@ -438,380 +475,180 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
   }
 
   if (bootstrap.loading) {
-    return <div className="panel">Initializing embedded Shopify session...</div>;
+    return (
+      <s-page>
+        <s-section>
+          <s-banner tone="info">Initializing embedded Shopify session...</s-banner>
+        </s-section>
+      </s-page>
+    );
   }
 
   if (bootstrap.error) {
-    return <div className="panel error-text">{bootstrap.error}</div>;
+    return (
+      <s-page>
+        <s-section>
+          <s-banner tone="critical">{bootstrap.error}</s-banner>
+        </s-section>
+      </s-page>
+    );
   }
 
   return (
-    <div className={`page-shell layout-col${isSkuValidationLoading ? "is-sku-loading" : ""}`}>
-      <s-page>
-        <s-section>
-          <div className="panel layout-col">
-            <h1>{title}</h1>
-            {readOnly ? (
-              <div className="readonly-banner">
-                This purchase order is archived and cannot be modified. Fields are shown in read-only mode.
-              </div>
-            ) : null}
-            {headerError ? <div className="error-text">{headerError}</div> : null}
-            {submitError ? <div className="error-text">{submitError}</div> : null}
-            {successMessage ? <div className="info-text">{successMessage}</div> : null}
+    <s-page className={isSkuValidationLoading ? 'is-sku-loading' : undefined}>
+      <s-section>
+        <s-stack direction="block" gap="base">
+          <s-heading>{title}</s-heading>
 
-            <div className="layout-row">
-              <div className="col-4">
-                <label htmlFor="vendor">Vendor</label>
-                <select
-                  id="vendor"
-                  value={vendor}
-                  disabled={readOnly}
-                  onChange={(event) => setVendor(event.target.value)}
-                >
-                  <option value="" disabled>
-                    {loadingVendors ? "Loading vendors..." : "Select Vendor"}
-                  </option>
+          {readOnly ? (
+            <s-banner tone="info">
+              This purchase order is archived and cannot be modified. Fields are shown in read-only mode.
+            </s-banner>
+          ) : null}
+          {headerError ? <s-banner tone="critical">{headerError}</s-banner> : null}
+          {submitError ? <s-banner tone="critical">{submitError}</s-banner> : null}
+          {successMessage ? <s-banner tone="success">{successMessage}</s-banner> : null}
 
+          <s-query-container>
+            <s-grid
+              gap="base"
+              gridTemplateColumns="@container (inline-size < 900px) 1fr, repeat(12, minmax(0, 1fr))"
+            >
+              <s-box style={{ gridColumn: 'span 4' }}>
+                <s-select label="Vendor" value={vendor} disabled={readOnly} onChange={(event: Event) => setVendor(eventValue(event))}>
+                  <s-option value="" disabled>
+                    {loadingVendors ? 'Loading vendors...' : 'Select Vendor'}
+                  </s-option>
                   {allVendorOptions.map((option) => (
-                    <option key={option} value={option}>
+                    <s-option key={option} value={option}>
                       {option}
-                    </option>
+                    </s-option>
                   ))}
-                </select>
+                </s-select>
+              </s-box>
 
-              </div>
-
-              <div className="col-4">
-                <label htmlFor="import-duties">Import Duties</label>
-                <select
-                  id="import-duties"
+              <s-box style={{ gridColumn: 'span 4' }}>
+                <s-select
+                  label="Import Duties"
                   value={importDuties ? 'true' : 'false'}
                   disabled={readOnly}
-                  onChange={(event) => setImportDuties(event.target.value === 'true')}
+                  onChange={(event: Event) => setImportDuties(eventValue(event) === 'true')}
                 >
-                  <option value="false">No</option>
-                  <option value="true">Yes</option>
-                </select>
-              </div>
+                  <s-option value="false">No</s-option>
+                  <s-option value="true">Yes</s-option>
+                </s-select>
+              </s-box>
 
-              <div className="col-4">
-                <label htmlFor="import-type">Import Type</label>
-                <select
-                  id="import-type"
+              <s-box style={{ gridColumn: 'span 4' }}>
+                <s-select
+                  label="Import Type"
                   value={importType}
                   disabled={readOnly}
-                  onChange={(event) => setImportType(event.target.value)}
+                  onChange={(event: Event) => setImportType(eventValue(event))}
                 >
                   {IMPORT_TYPES.map((option) => (
-                    <option key={option} value={option}>
+                    <s-option key={option} value={option}>
                       {option}
-                    </option>
+                    </s-option>
                   ))}
-                </select>
-              </div>
+                </s-select>
+              </s-box>
 
-              <div className="col-3">
-                <label htmlFor="expected-on">Expected On</label>
-                <input
-                  id="expected-on"
-                  className="field"
-                  type="date"
+              <s-box style={{ gridColumn: 'span 3' }}>
+                <s-date-field
+                  label="Expected On"
                   value={expectedDate}
                   disabled={readOnly}
-                  onChange={(event) => setExpectedDate(event.target.value)}
+                  onChange={(event: Event) => setExpectedDate(eventValue(event))}
                 />
-              </div>
+              </s-box>
 
-              <div className="col-3">
-                <label htmlFor="shipping-fees">Shipping Fees</label>
-                <input
-                  id="shipping-fees"
-                  className="field"
-                  type="number"
+              <s-box style={{ gridColumn: 'span 3' }}>
+                <s-number-field
+                  label="Shipping Fees"
+                  value={shippingFees}
                   min="0"
                   step="0.01"
-                  value={shippingFees}
                   disabled={readOnly}
-                  onChange={(event) => setShippingFees(event.target.value)}
+                  onInput={(event: Event) => setShippingFees(eventValue(event))}
                 />
-              </div>
+              </s-box>
 
-              <div className="col-3">
-                <label htmlFor="shipping-fees-currency">Shipping Fees Currency</label>
-                <select
-                  id="shipping-fees-currency"
+              <s-box style={{ gridColumn: 'span 3' }}>
+                <s-select
+                  label="Shipping Fees Currency"
                   value={shippingFeesCurrency}
                   disabled={readOnly}
-                  onChange={(event) => setShippingFeesCurrency(event.target.value)}
+                  onChange={(event: Event) => setShippingFeesCurrency(eventValue(event))}
                 >
                   {CURRENCIES.map((option) => (
-                    <option key={option} value={option}>
+                    <s-option key={option} value={option}>
                       {option}
-                    </option>
+                    </s-option>
                   ))}
-                </select>
-              </div>
+                </s-select>
+              </s-box>
 
-              <div className="col-12">
-                <label htmlFor="notes">Notes</label>
-                <textarea
-                  id="notes"
+              <s-box style={{ gridColumn: 'span 12' }}>
+                <s-text-area
+                  label="Notes"
                   value={notes}
                   disabled={readOnly}
-                  onChange={(event) => setNotes(event.target.value)}
+                  onInput={(event: Event) => setNotes(eventValue(event))}
                 />
-              </div>
-            </div>
-          </div>
-        </s-section>
-
-        <s-section>
-          <div className="panel layout-col">
-            <div className="inline">
-              <h2 style={{ margin: 0 }}>Items Grid</h2>
-              {!readOnly ? (
-                <button className="btn-neutral" type="button" onClick={addLine}>
-                  Add line
-                </button>
-              ) : null}
-            </div>
-
-            <div className="table-scroll">
-              <s-table>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Item</th>
-                      <th>SKU</th>
-                      <th>Product Title</th>
-                      <th>Variant Title</th>
-                      <th>Order Qty</th>
-                      <th>Unit Cost</th>
-                      <th>Unit Cost Currency</th>
-                      <th>HS Code</th>
-                      <th>COO</th>
-                      <th />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {lines.map((line, index) => {
-                      const lockBySku = immutableBySku.has(line.rowId);
-                      const variants = variantPool[line.rowId] ?? [];
-                      const variantSuggestions = variants.filter((variant) =>
-                        variant.variantTitle.toLowerCase().includes(line.variantTitle.toLowerCase())
-                      );
-
-                      return (
-                        <tr key={line.rowId}>
-                          <td>{index + 1}</td>
-                          <td>
-                            <input
-                              className="field"
-                              value={line.sku}
-                              disabled={readOnly}
-                              onChange={(event) => {
-                                const value = event.target.value;
-                                updateLine(line.rowId, (current) => ({
-                                  ...current,
-                                  sku: value,
-                                  skuError: null,
-                                  ...(value ? {} : { productId: null, variantId: null })
-                                }));
-                              }}
-                              onBlur={() => {
-                                if (line.sku.trim()) {
-                                  void validateSkuForLine(line.rowId);
-                                }
-                              }}
-                            />
-                            {line.skuError ? <div className="error-text">{line.skuError}</div> : null}
-                          </td>
-
-                          <td>
-                            <div className="autocomplete">
-                              <input
-                                className="field"
-                                value={line.productTitle}
-                                disabled={readOnly || lockBySku}
-                                onChange={(event) => {
-                                  const value = event.target.value;
-                                  updateLine(line.rowId, (current) => ({
-                                    ...current,
-                                    productTitle: value,
-                                    productId: null,
-                                    variantId: null,
-                                    variantTitle: ''
-                                  }));
-                                  void searchProducts(line.rowId, value);
-                                }}
-                              />
-                              {!readOnly && !lockBySku && (productSuggestions[line.rowId]?.length ?? 0) > 0 ? (
-                                <div className="autocomplete-panel">
-                                  {productSuggestions[line.rowId]!.map((product) => (
-                                    <button
-                                      key={product.id}
-                                      type="button"
-                                      className="autocomplete-item"
-                                      onClick={() => {
-                                        void selectProduct(line.rowId, product);
-                                      }}
-                                    >
-                                      {product.title} ({product.vendor})
-                                    </button>
-                                  ))}
-                                </div>
-                              ) : null}
-                            </div>
-                          </td>
-
-                          <td>
-                            <div className="autocomplete">
-                              <input
-                                className="field"
-                                value={line.variantTitle}
-                                disabled={readOnly || lockBySku}
-                                onChange={(event) => {
-                                  updateLine(line.rowId, (current) => ({
-                                    ...current,
-                                    variantTitle: event.target.value,
-                                    variantId: null
-                                  }));
-                                }}
-                              />
-                              {!readOnly && !lockBySku && variantSuggestions.length > 0 ? (
-                                <div className="autocomplete-panel">
-                                  {variantSuggestions.slice(0, 20).map((variant) => (
-                                    <button
-                                      key={variant.id}
-                                      type="button"
-                                      className="autocomplete-item"
-                                      onClick={() => selectVariant(line.rowId, variant)}
-                                    >
-                                      {variant.variantTitle}
-                                    </button>
-                                  ))}
-                                </div>
-                              ) : null}
-                            </div>
-                          </td>
-
-                          <td>
-                            <input
-                              className="field"
-                              type="number"
-                              min="1"
-                              step="1"
-                              value={line.orderQty}
-                              disabled={readOnly}
-                              onChange={(event) =>
-                                updateLine(line.rowId, (current) => ({ ...current, orderQty: event.target.value }))
-                              }
-                            />
-                          </td>
-
-                          <td>
-                            <input
-                              className="field"
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              value={line.unitCost}
-                              disabled={readOnly}
-                              onChange={(event) =>
-                                updateLine(line.rowId, (current) => ({ ...current, unitCost: event.target.value }))
-                              }
-                            />
-                          </td>
-
-                          <td>
-                            <select
-                              value={line.unitCostCurrency}
-                              disabled={readOnly}
-                              onChange={(event) =>
-                                updateLine(line.rowId, (current) => ({ ...current, unitCostCurrency: event.target.value }))
-                              }
-                            >
-                              {CURRENCIES.map((currency) => (
-                                <option key={currency} value={currency}>
-                                  {currency}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-
-                          <td>
-                            <input
-                              className="field"
-                              value={line.hsCode}
-                              disabled={readOnly}
-                              onChange={(event) =>
-                                updateLine(line.rowId, (current) => ({ ...current, hsCode: event.target.value }))
-                              }
-                            />
-                          </td>
-
-                          <td>
-                            <input
-                              className="field"
-                              value={line.coo}
-                              maxLength={2}
-                              disabled={readOnly}
-                              onChange={(event) =>
-                                updateLine(line.rowId, (current) => ({
-                                  ...current,
-                                  coo: event.target.value.toUpperCase()
-                                }))
-                              }
-                            />
-                          </td>
-
-                          <td>
-                            {!readOnly ? (
-                              <button className="btn-danger" type="button" onClick={() => removeLine(line.rowId)}>
-                                Remove
-                              </button>
-                            ) : null}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </s-table>
-            </div>
-
-            {!readOnly ? (
-              <div className="action-row">
-                <button type="button" className="btn-primary" onClick={() => void submit()} disabled={submitting}>
-                  {submitting ? 'Saving...' : mode === 'create' ? 'Create Purchase Order' : 'Save Changes'}
-                </button>
-                <button
-                  type="button"
-                  className="btn-neutral"
-                  onClick={() => {
-                    router.push(purchaseOrdersHref);
-                  }}
-                >
-                  Back to list
-                </button>
-              </div>
-            ) : (
-              <div className="action-row">
-                <button
-                  type="button"
-                  className="btn-neutral"
-                  onClick={() => {
-                    router.push(purchaseOrdersHref);
-                  }}
-                >
-                  Back to list
-                </button>
-              </div>
-            )}
-          </div>
-        </s-section>
-      </s-page>
-    </div>
+              </s-box>
+            </s-grid>
+          </s-query-container>
+        </s-stack>
+      </s-section>
+      <ItemGrids
+        readOnly={readOnly}
+        lines={lines}
+        immutableBySku={immutableBySku}
+        variantPool={variantPool}
+        productSuggestions={productSuggestions}
+        activeProductPopoverRowId={activeProductPopoverRowId}
+        activeVariantPopoverRowId={activeVariantPopoverRowId}
+        addLine={addLine}
+        removeLine={removeLine}
+        updateLine={updateLine}
+        validateSkuForLine={validateSkuForLine}
+        searchProducts={searchProducts}
+        selectProduct={selectProduct}
+        selectVariant={selectVariant}
+        setActiveProductPopoverRowId={setActiveProductPopoverRowId}
+        setActiveVariantPopoverRowId={setActiveVariantPopoverRowId}
+      />
+      <s-section>
+        {!readOnly ? (
+          <s-stack direction="inline" gap="small">
+            <s-button type="button" variant="primary" onClick={() => void submit()} disabled={submitting}>
+              {submitting ? 'Saving...' : mode === 'create' ? 'Create Purchase Order' : 'Save Changes'}
+            </s-button>
+            <s-button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                router.push(purchaseOrdersHref);
+              }}
+            >
+              Back to list
+            </s-button>
+          </s-stack>
+        ) : (
+          <s-stack direction="inline" gap="small">
+            <s-button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                router.push(purchaseOrdersHref);
+              }}
+            >
+              Back to list
+            </s-button>
+          </s-stack>
+        )}
+      </s-section>
+    </s-page>
   );
 }

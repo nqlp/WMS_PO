@@ -164,12 +164,6 @@ button {
   color: var(--danger);
 }
 
-.inline {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .table-scroll {
   overflow-x: auto;
 }
@@ -243,61 +237,11 @@ tr:last-child td {
   font-size: 0.78rem;
 }
 
-.info-text {
-  color: var(--muted);
-  font-size: 0.85rem;
-}
-
 .action-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0.55rem;
   margin-top: 0.5rem;
-}
-
-.autocomplete {
-  position: relative;
-}
-
-.autocomplete-panel {
-  position: absolute;
-  z-index: 40;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.12);
-  max-height: 220px;
-  overflow-y: auto;
-}
-
-.autocomplete-item {
-  width: 100%;
-  border: 0;
-  border-bottom: 1px solid #eef2f7;
-  border-radius: 0;
-  text-align: left;
-  padding: 0.5rem 0.6rem;
-  background: #fff;
-}
-
-.autocomplete-item:last-child {
-  border-bottom: 0;
-}
-
-.autocomplete-item:hover {
-  background: #f5f8ff;
-}
-
-.readonly-banner {
-  border: 1px solid #f0d8a4;
-  background: #fff6df;
-  color: #925b03;
-  padding: 0.7rem 0.85rem;
-  border-radius: 10px;
-  margin-bottom: 1rem;
 }
 
 .is-sku-loading,
@@ -308,4 +252,47 @@ tr:last-child td {
 body.sku-loading-cursor,
 body.sku-loading-cursor * {
   cursor: progress !important;
+}
+
+s-table-header.hs-code-header,
+s-table-cell.hs-code-cell {
+  width: 22rem !important;
+  min-width: 22rem !important;
+}
+
+s-text-field.hs-code-field {
+  display: inline-block !important;
+  width: 22rem !important;
+  min-width: 22rem !important;
+  max-width: 22rem !important;
+}
+
+s-text-field.title-field-disabled {
+  opacity: 0.5 !important;
+  filter: grayscale(1) !important;
+  pointer-events: none;
+}
+
+s-table-header.title-col-header,
+s-table-cell.title-col-cell {
+  width: 24rem !important;
+  min-width: 24rem !important;
+}
+
+s-box.title-control-wrap {
+  display: inline-block;
+  width: 100%;
+  min-width: 100%;
+}
+
+s-box.title-control-wrap s-text-field {
+  display: inline-block !important;
+  width: 100% !important;
+  min-width: 100% !important;
+}
+
+s-button.title-suggest-btn {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
 }
