@@ -279,6 +279,16 @@ s-table-cell.title-col-cell {
   min-width: 24rem !important;
 }
 
+s-table-header.currency-col-header,
+s-table-cell.currency-col-cell {
+  width: 5rem;
+}
+
+s-select.currency-field {
+  display: inline-block;
+  width: 5rem;
+}
+
 s-box.title-control-wrap {
   display: inline-block;
   width: 100%;

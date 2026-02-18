@@ -98,7 +98,7 @@ export function ItemGrids({
               <s-table-header className="title-col-header">Variant Title</s-table-header>
               <s-table-header format="numeric">Order Qty</s-table-header>
               <s-table-header format="numeric">Unit Cost</s-table-header>
-              <s-table-header>Unit Cost Currency</s-table-header>
+              <s-table-header className="currency-col-header">Unit Cost Currency</s-table-header>
               <s-table-header className="hs-code-header">HS Code</s-table-header>
               <s-table-header>COO</s-table-header>
               <s-table-header>Actions</s-table-header>
@@ -341,8 +341,9 @@ export function ItemGrids({
                     />
                   </s-table-cell>
 
-                  <s-table-cell>
+                  <s-table-cell className="currency-col-cell">
                     <s-select
+                      className="currency-field"
                       value={line.unitCostCurrency}
                       disabled={readOnly}
                       onChange={(event: Event) =>
