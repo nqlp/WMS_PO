@@ -494,6 +494,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       }
     } catch (error) {
       setSubmitError("Failed to update purchase order.");
+      console.error("Error submitting purchase order form", error);
     } finally {
       setSubmitting(false);
     }
