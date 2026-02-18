@@ -409,54 +409,30 @@ export function ItemGrids({
                             onFocus={() => {
                               setActiveCooPopoverRowId(line.rowId);
                             }}
-                            onBlur={() => {
-                              window.setTimeout(() => {
-                                setActiveCooPopoverRowId((prev) => (prev === line.rowId ? null : prev));
-                              }, 150);
-                            }}
                           />
-                          {!readOnly ? (
-                            <>
-                              <s-button
-                                type="button"
-                                variant="tertiary"
-                                icon="search"
-                                commandFor={cooPopoverId}
-                                disabled={cooSuggestions.length === 0}
-                                onClick={() => {
-                                  if (cooSuggestions.length > 0) {
-                                    setActiveCooPopoverRowId(line.rowId);
-                                  }
-                                }}
-                              >
-                                Country suggestions
-                              </s-button>
-
-                              {activeCooPopoverRowId === line.rowId && cooSuggestions.length > 0 ? (
-                                <s-popover id={cooPopoverId} maxBlockSize="240px" inlineSize="240px">
-                                  <s-box padding="base">
-                                    <s-stack direction="block" gap="small">
-                                      <s-heading>Select country</s-heading>
-                                      <s-choice-list
-                                        values={line.coo ? [line.coo] : []}
-                                        onChange={(event: Event) => {
-                                          const [selectedCode] = eventValues(event);
-                                          if (!selectedCode) return;
-                                          updateLine(line.rowId, (current) => ({ ...current, coo: selectedCode }));
-                                          setActiveCooPopoverRowId(null);
-                                        }}
-                                      >
-                                        {cooSuggestions.map((code) => (
-                                          <s-choice key={code} value={code}>
-                                            {code}
-                                          </s-choice>
-                                        ))}
-                                      </s-choice-list>
-                                    </s-stack>
-                                  </s-box>
-                                </s-popover>
-                              ) : null}
-                            </>
+                          {!readOnly && activeCooPopoverRowId === line.rowId && cooSuggestions.length > 0 ? (
+                            <s-popover id={cooPopoverId} maxBlockSize="240px" inlineSize="240px">
+                              <s-box padding="base">
+                                <s-stack direction="block" gap="small">
+                                  <s-heading>Select country</s-heading>
+                                  <s-choice-list
+                                    values={line.coo ? [line.coo] : []}
+                                    onChange={(event: Event) => {
+                                      const [selectedCode] = eventValues(event);
+                                      if (!selectedCode) return;
+                                      updateLine(line.rowId, (current) => ({ ...current, coo: selectedCode }));
+                                      setActiveCooPopoverRowId(null);
+                                    }}
+                                  >
+                                    {cooSuggestions.map((code) => (
+                                      <s-choice key={code} value={code}>
+                                        {code}
+                                      </s-choice>
+                                    ))}
+                                  </s-choice-list>
+                                </s-stack>
+                              </s-box>
+                            </s-popover>
                           ) : null}
                         </s-stack>
                       )}
