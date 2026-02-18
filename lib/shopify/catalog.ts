@@ -25,6 +25,9 @@ interface ProductSearchResponse {
           id: string;
           title: string;
           sku: string | null;
+          inventoryItem: {
+            harmonizedSystemCode: string | null;
+          } | null;
           selectedOptions: Array<{ name: string; value: string }>;
         }>;
       };
@@ -41,6 +44,9 @@ interface ProductVariantsResponse {
         id: string;
         title: string;
         sku: string | null;
+        inventoryItem: {
+          harmonizedSystemCode: string | null;
+        } | null;
         selectedOptions: Array<{ name: string; value: string }>;
       }>;
     };
@@ -52,6 +58,9 @@ interface SkuValidationResponse {
     nodes: Array<{
       id: string;
       sku: string | null;
+      inventoryItem: {
+        harmonizedSystemCode: string | null;
+      } | null;
       product: { id: string; title: string };
       selectedOptions: Array<{ name: string; value: string }>;
     }>;
@@ -63,6 +72,7 @@ export interface ShopifyVariantLite {
   sku: string | null;
   title: string;
   variantTitle: string;
+  hsCode: string | null;
 }
 
 export interface ShopifyProductLite {
@@ -78,6 +88,7 @@ export interface SkuValidationMatch {
   productId: string;
   productTitle: string;
   variantTitle: string;
+  hsCode: string | null;
 }
 
 function toVariantTitle(selectedOptions: Array<{ name: string; value: string }>, fallback: string): string {
@@ -175,6 +186,9 @@ export async function searchProducts(session: AuthenticatedSession, rawQuery: st
               id
               title
               sku
+              inventoryItem {
+                harmonizedSystemCode
+              }
               selectedOptions {
                 name
                 value
@@ -196,7 +210,8 @@ export async function searchProducts(session: AuthenticatedSession, rawQuery: st
       id: variant.id,
       sku: variant.sku,
       title: variant.title,
-      variantTitle: toVariantTitle(variant.selectedOptions, variant.title)
+      variantTitle: toVariantTitle(variant.selectedOptions, variant.title),
+      hsCode: variant.inventoryItem?.harmonizedSystemCode?.trim() || null
     }))
   }));
 }
@@ -214,6 +229,9 @@ export async function getProductVariants(session: AuthenticatedSession, productI
             id
             title
             sku
+            inventoryItem {
+              harmonizedSystemCode
+            }
             selectedOptions {
               name
               value
@@ -234,7 +252,8 @@ export async function getProductVariants(session: AuthenticatedSession, productI
     id: variant.id,
     sku: variant.sku,
     title: variant.title,
-    variantTitle: toVariantTitle(variant.selectedOptions, variant.title)
+    variantTitle: toVariantTitle(variant.selectedOptions, variant.title),
+    hsCode: variant.inventoryItem?.harmonizedSystemCode?.trim() || null
   }));
 }
 
@@ -252,6 +271,9 @@ export async function validateSku(session: AuthenticatedSession, rawSku: string)
         nodes {
           id
           sku
+          inventoryItem {
+            harmonizedSystemCode
+          }
           product {
             id
             title
@@ -276,6 +298,7 @@ export async function validateSku(session: AuthenticatedSession, rawSku: string)
       sku: variant.sku ?? sku,
       productId: variant.product.id,
       productTitle: variant.product.title,
-      variantTitle: toVariantTitle(variant.selectedOptions, 'Default Title')
+      variantTitle: toVariantTitle(variant.selectedOptions, 'Default Title'),
+      hsCode: variant.inventoryItem?.harmonizedSystemCode?.trim() || null
     }));
 }

@@ -46,6 +46,7 @@ export interface VariantOption {
   sku: string | null;
   title: string;
   variantTitle: string;
+  hsCode: string | null;
 }
 
 export interface FormLine {
@@ -246,23 +247,39 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
           productId: string;
           productTitle: string;
           variantTitle: string;
+          hsCode: string | null;
         }>;
         count: number;
       }>(`/api/shopify/variants/validate-sku?sku=${encodeURIComponent(sku)}`);
 
       if (payload.count === 0) {
-        updateLine(rowId, (line) => ({ ...line, skuError: 'SKU not found in Shopify variants' }));
+        updateLine(rowId, (line) => ({
+          ...line,
+          variantId: null,
+          hsCode: "",
+          skuError: "SKU not found in Shopify variants"
+        }));
         return;
       }
 
       if (payload.count > 1) {
-        updateLine(rowId, (line) => ({ ...line, skuError: 'SKU matched multiple variants' }));
+        updateLine(rowId, (line) => ({
+          ...line,
+          variantId: null,
+          hsCode: "",
+          skuError: "SKU matched multiple variants"
+        }));
         return;
       }
 
       const [match] = payload.matches;
       if (!match) {
-        updateLine(rowId, (line) => ({ ...line, skuError: 'SKU validation returned no match' }));
+        updateLine(rowId, (line) => ({
+          ...line,
+          variantId: null,
+          hsCode: "",
+          skuError: "SKU validation returned no match"
+        }));
         return;
       }
 
@@ -273,6 +290,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         productTitle: match.productTitle,
         variantId: match.variantId,
         variantTitle: match.variantTitle,
+        hsCode: match.hsCode ?? "",
         skuError: null
       }));
 
@@ -319,7 +337,8 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       productId: product.id,
       productTitle: product.title,
       variantId: null,
-      variantTitle: ''
+      variantTitle: "",
+      hsCode: ""
     }));
 
     setProductSuggestions((prev) => ({ ...prev, [rowId]: [] }));
@@ -340,7 +359,8 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       ...line,
       variantId: variant.id,
       variantTitle: variant.variantTitle,
-      sku: line.sku || variant.sku || '',
+      sku: line.sku || variant.sku || "",
+      hsCode: variant.hsCode ?? "",
       skuError: null
     }));
     setActiveVariantPopoverRowId((prev) => (prev === rowId ? null : prev));
@@ -351,12 +371,12 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
     setHeaderError(null);
 
     if (!vendor.trim()) {
-      setHeaderError('Vendor is required');
+      setHeaderError("Vendor is required");
       return false;
     }
 
     if (lines.length === 0) {
-      setSubmitError('At least one line item is required');
+      setSubmitError("At least one line item is required");
       return false;
     }
 
@@ -399,7 +419,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
     if (shippingFees.trim()) {
       const money = Number(shippingFees);
       if (!Number.isFinite(money) || money < 0) {
-        setHeaderError('Shipping fees must be >= 0');
+        setHeaderError("Shipping fees must be >= 0");
         return false;
       }
     }
@@ -408,7 +428,12 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
   }
 
   async function submit() {
-    if (readOnly || submitting || bootstrap.loading || !bootstrap.csrfToken) {
+    if (readOnly || submitting || bootstrap.loading) {
+      return;
+    }
+
+    if (!bootstrap.csrfToken) {
+      setSubmitError("Creation failed: missing CSRF token. Reload the page and open the app from Shopify Admin.");
       return;
     }
 
@@ -442,9 +467,9 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
     try {
       setSubmitting(true);
       setSuccessMessage(null);
-      if (mode === 'create') {
+      if (mode === "create") {
         const created = await apiFetch<{ poNumber: string }>('/api/purchase-orders', {
-          method: 'POST',
+          method: "POST",
           csrfToken: bootstrap.csrfToken,
           body: JSON.stringify(payload)
         });
@@ -455,11 +480,11 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       } else {
         const poNumber = initialData?.poNumber;
         if (!poNumber) {
-          throw new Error('Missing purchase order number');
+          throw new Error("Missing purchase order number");
         }
 
         await apiFetch<{ purchaseOrder: PurchaseOrderDto }>(`/api/purchase-orders/${poNumber}`, {
-          method: 'PATCH',
+          method: "PATCH",
           csrfToken: bootstrap.csrfToken,
           body: JSON.stringify(payload)
         });
@@ -468,7 +493,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         router.refresh();
       }
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Save failed');
+      setSubmitError("Failed to update purchase order.");
     } finally {
       setSubmitting(false);
     }
@@ -495,7 +520,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
   }
 
   return (
-    <s-page className={isSkuValidationLoading ? 'is-sku-loading' : undefined}>
+    <s-page className={isSkuValidationLoading ? "is-sku-loading" : undefined}>
       <s-section>
         <s-stack direction="block" gap="base">
           <s-heading>{title}</s-heading>
@@ -517,7 +542,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
               <s-box style={{ gridColumn: 'span 4' }}>
                 <s-select label="Vendor" value={vendor} disabled={readOnly} onChange={(event: Event) => setVendor(eventValue(event))}>
                   <s-option value="" disabled>
-                    {loadingVendors ? 'Loading vendors...' : 'Select Vendor'}
+                    {loadingVendors ? "Loading vendors..." : "Select Vendor"}
                   </s-option>
                   {allVendorOptions.map((option) => (
                     <s-option key={option} value={option}>
@@ -530,9 +555,9 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
               <s-box style={{ gridColumn: 'span 4' }}>
                 <s-select
                   label="Import Duties"
-                  value={importDuties ? 'true' : 'false'}
+                  value={importDuties ? "true" : "false"}
                   disabled={readOnly}
-                  onChange={(event: Event) => setImportDuties(eventValue(event) === 'true')}
+                  onChange={(event: Event) => setImportDuties(eventValue(event) === "true")}
                 >
                   <s-option value="false">No</s-option>
                   <s-option value="true">Yes</s-option>
@@ -620,6 +645,9 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         setActiveVariantPopoverRowId={setActiveVariantPopoverRowId}
       />
       <s-section>
+        {(headerError || submitError) ? (
+          <s-banner tone="critical">{submitError ?? headerError}</s-banner>
+        ) : null}
         {!readOnly ? (
           <s-stack direction="inline" gap="small">
             <s-button type="button" variant="primary" onClick={() => void submit()} disabled={submitting}>
