@@ -1,7 +1,7 @@
 'use client';
 
 import { Dispatch, SetStateAction } from 'react';
-import { CURRENCIES } from '@/lib/constants';
+import { COO, CURRENCIES } from '@/lib/constants';
 import type { FormLine, ProductOption, VariantOption } from '@/components/purchase-order-form';
 
 function eventValue(event: unknown): string {
@@ -57,6 +57,8 @@ interface ItemGridsProps {
   selectVariant: (rowId: string, variant: VariantOption) => void;
   setActiveProductPopoverRowId: Dispatch<SetStateAction<string | null>>;
   setActiveVariantPopoverRowId: Dispatch<SetStateAction<string | null>>;
+  activeCooPopoverRowId: string | null;
+  setActiveCooPopoverRowId: Dispatch<SetStateAction<string | null>>;
 }
 
 export function ItemGrids({
@@ -75,7 +77,9 @@ export function ItemGrids({
   selectProduct,
   selectVariant,
   setActiveProductPopoverRowId,
-  setActiveVariantPopoverRowId
+  setActiveVariantPopoverRowId,
+  activeCooPopoverRowId,
+  setActiveCooPopoverRowId
 }: ItemGridsProps) {
   return (
     <s-section>
@@ -109,11 +113,15 @@ export function ItemGrids({
                 const variants = variantPool[line.rowId] ?? [];
                 const currentProductSuggestions = productSuggestions[line.rowId] ?? [];
                 const variantSuggestions = variants.filter((variant) =>
-                  variant.variantTitle.toLowerCase().includes(line.variantTitle.toLowerCase())
+                  variant.variantTitle.toUpperCase().includes(line.variantTitle.toUpperCase())
                 );
 
+                const cooSuggestions = COO.filter((coo) =>
+                  coo.toUpperCase().includes(line.coo.toUpperCase())
+                );
                 const productPopoverId = `product-popover-${line.rowId}`;
                 const variantPopoverId = `variant-popover-${line.rowId}`;
+                const cooPopoverId = `coo-popover-${line.rowId}`;
 
                 return (
                   <s-table-row key={line.rowId}>
@@ -133,8 +141,10 @@ export function ItemGrids({
                               sku: value,
                               skuError: null,
                               variantId: value === current.sku ? current.variantId : null,
-                              hsCode: value === current.sku ? current.hsCode : '',
-                              ...(value ? {} : { productId: null, variantId: null, hsCode: '' })
+                              coo: value === current.sku ? current.coo : "",
+                              cooLocked: value === current.sku ? current.cooLocked : false,
+                              hsCode: value === current.sku ? current.hsCode : "",
+                              ...(value ? {} : { productId: null, variantId: null, hsCode: "", coo: "", cooLocked: false })
                             }));
                           }}
                           onBlur={() => {
@@ -371,19 +381,79 @@ export function ItemGrids({
                       />
                     </s-table-cell>
 
-                    <s-table-cell>
-                      <s-text-field
-                        value={line.coo}
-                        maxLength={2}
-                        disabled={readOnly}
-                        onInput={(event: Event) =>
-                          updateLine(line.rowId, (current) => ({
-                            ...current,
-                            coo: eventValue(event).toUpperCase()
-                          }))
-                        }
-                      />
+                    <s-table-cell className="coo-cell">
+                      {line.cooLocked ? (
+                        <s-text-field
+                          className="coo-field title-field-disabled"
+                          value={line.coo}
+                          disabled
+                        />
+                      ) : (
+                        <s-stack direction="block" gap="small">
+                          <s-text-field
+                            className="coo-field"
+                            value={line.coo}
+                            maxLength={2}
+                            disabled={readOnly}
+                            onInput={(event: Event) =>
+                              updateLine(line.rowId, (current) => ({
+                                ...current,
+                                coo: eventValue(event).toUpperCase()
+                              }))
+                            }
+                            onBlur={() => {
+                              window.setTimeout(() => {
+                                setActiveCooPopoverRowId((prev) => (prev === line.rowId ? null : prev));
+                              }, 120);
+                            }}
+                          />
+                          {!readOnly ? (
+                            <>
+                              <s-button
+                                type="button"
+                                variant="tertiary"
+                                icon="search"
+                                commandFor={cooPopoverId}
+                                disabled={cooSuggestions.length === 0}
+                                onClick={() => {
+                                  if (cooSuggestions.length > 0) {
+                                    setActiveCooPopoverRowId(line.rowId);
+                                  }
+                                }}
+                              >
+                                Country suggestions
+                              </s-button>
+
+                              {activeCooPopoverRowId === line.rowId && cooSuggestions.length > 0 ? (
+                                <s-popover id={cooPopoverId} maxBlockSize="240px" inlineSize="240px">
+                                  <s-box padding="base">
+                                    <s-stack direction="block" gap="small">
+                                      <s-heading>Select country</s-heading>
+                                      <s-choice-list
+                                        values={line.coo ? [line.coo] : []}
+                                        onChange={(event: Event) => {
+                                          const [selectedCode] = eventValues(event);
+                                          if (!selectedCode) return;
+                                          updateLine(line.rowId, (current) => ({ ...current, coo: selectedCode }));
+                                          setActiveCooPopoverRowId(null);
+                                        }}
+                                      >
+                                        {cooSuggestions.map((code) => (
+                                          <s-choice key={code} value={code}>
+                                            {code}
+                                          </s-choice>
+                                        ))}
+                                      </s-choice-list>
+                                    </s-stack>
+                                  </s-box>
+                                </s-popover>
+                              ) : null}
+                            </>
+                          ) : null}
+                        </s-stack>
+                      )}
                     </s-table-cell>
+
 
                     <s-table-cell>
                       {!readOnly ? (

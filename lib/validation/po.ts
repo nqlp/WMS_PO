@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { CURRENCIES, IMPORT_TYPES, PO_HEADER_STATUS } from '@/lib/constants';
+import { COO, CURRENCIES, IMPORT_TYPES, PO_HEADER_STATUS } from '@/lib/constants';
 
 const currencySchema = z.enum(CURRENCIES);
 const importTypeSchema = z.enum(IMPORT_TYPES);
@@ -40,13 +40,14 @@ const lineSchema = z.object({
     .toUpperCase()
     .optional()
     .nullable()
-    .refine((value) => value == null || value.length === 2, 'COO must be exactly 2 characters')
+    .refine((value) => value == null || value.length === 2, "COO must be exactly 2 characters")
+    .refine((value) => value == null || (COO as readonly string[]).includes(value), "COO must be a valid ISO country code")
 });
 
 const headerSchema = z.object({
   vendor: z.string().trim().min(1),
   importDuties: z.boolean(),
-  importType: importTypeSchema.default('NO_IMPORT'),
+  importType: importTypeSchema.default("NO_IMPORT"),
   expectedDate: optionalDateSchema,
   shippingFees: nonNegativeMoneySchema.optional().nullable(),
   shippingFeesCurrency: currencySchema.optional().nullable(),

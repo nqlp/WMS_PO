@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
-import { CURRENCIES, IMPORT_TYPES } from '@/lib/constants';
+import { COO, CURRENCIES, IMPORT_TYPES } from '@/lib/constants';
 import { apiFetch } from '@/lib/client/api';
 import { withEmbeddedParams } from '@/lib/client/embedded-url';
 import { useEmbeddedBootstrap, useVendors } from '@/lib/client/hooks';
@@ -46,6 +46,7 @@ export interface VariantOption {
   sku: string | null;
   title: string;
   variantTitle: string;
+  coo: string | null;
   hsCode: string | null;
 }
 
@@ -62,11 +63,12 @@ export interface FormLine {
   unitCostCurrency: string;
   hsCode: string;
   coo: string;
+  cooLocked: boolean;
   skuError: string | null;
 }
 
 interface PurchaseOrderFormProps {
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
   title: string;
   initialData?: PurchaseOrderDto;
   readOnly?: boolean;
@@ -81,26 +83,27 @@ function lineId(): string {
 function emptyLine(): FormLine {
   return {
     rowId: lineId(),
-    sku: '',
+    sku: "",
     productId: null,
-    productTitle: '',
+    productTitle: "",
     variantId: null,
-    variantTitle: '',
-    orderQty: '1',
-    unitCost: '',
+    variantTitle: "",
+    orderQty: "1",
+    unitCost: "",
     unitCostCurrency: DEFAULT_CURRENCY,
-    hsCode: '',
-    coo: '',
+    hsCode: "",
+    coo: "",
+    cooLocked: false,
     skuError: null
   };
 }
 
 function decimalText(value: string | number | null): string {
   if (value == null) {
-    return '';
+    return "";
   }
 
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return value.toFixed(2);
   }
 
@@ -132,29 +135,29 @@ function eventValue(event: unknown): string {
 export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }: PurchaseOrderFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const purchaseOrdersHref = withEmbeddedParams('/purchase-orders', searchParams);
+  const purchaseOrdersHref = withEmbeddedParams("/purchase-orders", searchParams);
   const bootstrap = useEmbeddedBootstrap();
 
-  const [vendor, setVendor] = useState(initialData?.vendor ?? '');
+  const [vendor, setVendor] = useState(initialData?.vendor ?? "");
   const { allVendorOptions, loading: loadingVendors } = useVendors(
     !bootstrap.loading && !bootstrap.error,
     vendor
   );
   const [importDuties, setImportDuties] = useState(initialData?.importDuties ?? false);
-  const [importType, setImportType] = useState(initialData?.importType ?? 'NO_IMPORT');
-  const [expectedDate, setExpectedDate] = useState(initialData?.expectedDate?.slice(0, 10) ?? '');
+  const [importType, setImportType] = useState(initialData?.importType ?? "NO_IMPORT");
+  const [expectedDate, setExpectedDate] = useState(initialData?.expectedDate?.slice(0, 10) ?? "");
   const [shippingFees, setShippingFees] = useState(decimalText(initialData?.shippingFees ?? null));
   const [shippingFeesCurrency, setShippingFeesCurrency] = useState(
     initialData?.shippingFeesCurrency ?? DEFAULT_CURRENCY
   );
-  const [notes, setNotes] = useState(initialData?.notes ?? '');
+  const [notes, setNotes] = useState(initialData?.notes ?? "");
 
   const [lines, setLines] = useState<FormLine[]>(
     initialData?.items?.length
       ? initialData.items.map((item) => ({
         rowId: lineId(),
         existingPoItem: item.poItem,
-        sku: item.sku ?? '',
+        sku: item.sku ?? "",
         productId: null,
         productTitle: item.productTitle,
         variantId: null,
@@ -162,8 +165,9 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         orderQty: String(item.orderQty),
         unitCost: decimalText(item.unitCost),
         unitCostCurrency: item.unitCostCurrency ?? DEFAULT_CURRENCY,
-        hsCode: item.hsCode ?? '',
-        coo: item.coo ?? '',
+        hsCode: item.hsCode ?? "",
+        coo: item.coo ?? "",
+        cooLocked: false,
         skuError: null
       }))
       : [emptyLine()]
@@ -173,6 +177,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
   const [variantPool, setVariantPool] = useState<Record<string, VariantOption[]>>({});
   const [activeProductPopoverRowId, setActiveProductPopoverRowId] = useState<string | null>(null);
   const [activeVariantPopoverRowId, setActiveVariantPopoverRowId] = useState<string | null>(null);
+  const [activeCooPopoverRowId, setActiveCooPopoverRowId] = useState<string | null>(null);
   const [validatingSkuRows, setValidatingSkuRows] = useState<Set<string>>(new Set());
   const [headerError, setHeaderError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -220,6 +225,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
     });
     setActiveProductPopoverRowId((prev) => (prev === rowId ? null : prev));
     setActiveVariantPopoverRowId((prev) => (prev === rowId ? null : prev));
+    setActiveCooPopoverRowId((prev) => (prev === rowId ? null : prev));
   }
 
   async function validateSkuForLine(rowId: string) {
@@ -247,6 +253,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
           productId: string;
           productTitle: string;
           variantTitle: string;
+          coo: string | null;
           hsCode: string | null;
         }>;
         count: number;
@@ -257,6 +264,8 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
           ...line,
           variantId: null,
           hsCode: "",
+          coo: "",
+          cooLocked: false,
           skuError: "SKU not found in Shopify variants"
         }));
         return;
@@ -266,6 +275,8 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         updateLine(rowId, (line) => ({
           ...line,
           variantId: null,
+          coo: "",
+          cooLocked: false,
           hsCode: "",
           skuError: "SKU matched multiple variants"
         }));
@@ -277,6 +288,8 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         updateLine(rowId, (line) => ({
           ...line,
           variantId: null,
+          coo: "",
+          cooLocked: false,
           hsCode: "",
           skuError: "SKU validation returned no match"
         }));
@@ -290,6 +303,8 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         productTitle: match.productTitle,
         variantId: match.variantId,
         variantTitle: match.variantTitle,
+        coo: match.coo ?? "",
+        cooLocked: Boolean(match.coo),
         hsCode: match.hsCode ?? "",
         skuError: null
       }));
@@ -298,7 +313,9 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       setVariantPool((prev) => ({ ...prev, [rowId]: [] }));
       setActiveProductPopoverRowId((prev) => (prev === rowId ? null : prev));
       setActiveVariantPopoverRowId((prev) => (prev === rowId ? null : prev));
+      setActiveCooPopoverRowId((prev) => (prev === rowId ? null : prev));
     } catch (error) {
+      console.error("Error validating SKU", error);
       updateLine(rowId, (line) => ({
         ...line,
         skuError: error instanceof Error ? error.message : "Unable to validate SKU"
@@ -338,6 +355,8 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       productTitle: product.title,
       variantId: null,
       variantTitle: "",
+      coo: "",
+      cooLocked: false,
       hsCode: ""
     }));
 
@@ -360,6 +379,8 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       variantId: variant.id,
       variantTitle: variant.variantTitle,
       sku: line.sku || variant.sku || "",
+      coo: variant.coo ?? "",
+      cooLocked: Boolean(variant.coo),
       hsCode: variant.hsCode ?? "",
       skuError: null
     }));
@@ -410,8 +431,14 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         }
       }
 
-      if (line.coo.trim() && line.coo.trim().length !== 2) {
+      const coo = line.coo.trim().toUpperCase();
+      if (coo && coo.length !== 2) {
         setSubmitError(`Line ${index + 1}: COO must be 2 characters`);
+        return false;
+      }
+      
+      if (coo && !(COO as readonly string[]).includes(coo)) {
+        setSubmitError(`Line ${index + 1}: COO must be a valid ISO country code`);
         return false;
       }
     }
@@ -661,6 +688,8 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         selectVariant={selectVariant}
         setActiveProductPopoverRowId={setActiveProductPopoverRowId}
         setActiveVariantPopoverRowId={setActiveVariantPopoverRowId}
+        activeCooPopoverRowId={activeCooPopoverRowId}
+        setActiveCooPopoverRowId={setActiveCooPopoverRowId}
       />
     </s-page>
   );
