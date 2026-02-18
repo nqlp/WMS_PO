@@ -116,9 +116,12 @@ export function ItemGrids({
                   variant.variantTitle.toUpperCase().includes(line.variantTitle.toUpperCase())
                 );
 
-                const cooSuggestions = COO.filter((coo) =>
-                  coo.toUpperCase().includes(line.coo.toUpperCase())
-                );
+                const cooQuery = line.coo.trim().toUpperCase();
+                const cooSuggestions = (
+                  cooQuery
+                    ? COO.filter((coo) => coo.includes(cooQuery))
+                    : COO
+                ).slice(0, 20);
                 const productPopoverId = `product-popover-${line.rowId}`;
                 const variantPopoverId = `variant-popover-${line.rowId}`;
                 const cooPopoverId = `coo-popover-${line.rowId}`;
@@ -395,16 +398,21 @@ export function ItemGrids({
                             value={line.coo}
                             maxLength={2}
                             disabled={readOnly}
-                            onInput={(event: Event) =>
+                            onInput={(event: Event) => {
+                              const value = eventValue(event).toUpperCase();
                               updateLine(line.rowId, (current) => ({
                                 ...current,
-                                coo: eventValue(event).toUpperCase()
-                              }))
-                            }
+                                coo: value
+                              }));
+                              setActiveCooPopoverRowId(line.rowId);
+                            }}
+                            onFocus={() => {
+                              setActiveCooPopoverRowId(line.rowId);
+                            }}
                             onBlur={() => {
                               window.setTimeout(() => {
                                 setActiveCooPopoverRowId((prev) => (prev === line.rowId ? null : prev));
-                              }, 120);
+                              }, 150);
                             }}
                           />
                           {!readOnly ? (
