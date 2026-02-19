@@ -1,9 +1,10 @@
 'use client';
 
 import { Dispatch, SetStateAction } from 'react';
-import { COO, CURRENCIES } from '@/lib/constants';
+import { COO_CODES, COO_LABELS, CURRENCIES } from '@/lib/constants';
 import type { FormLine, ProductOption, VariantOption } from '@/components/purchase-order-form';
 
+// Helper functions to extract values from events
 function eventValue(event: unknown): string {
   const currentValue = (event as { currentTarget?: { value?: unknown } }).currentTarget?.value;
   if (typeof currentValue === "string") {
@@ -23,18 +24,28 @@ function eventValue(event: unknown): string {
     return String(targetValue);
   }
 
-  return '';
+  return "";
 }
-
+// Helper function to extract multiple values (e.g., from a multi-select) from events
 function eventValues(event: unknown): string[] {
   const currentValues = (event as { currentTarget?: { values?: unknown } }).currentTarget?.values;
   if (Array.isArray(currentValues)) {
     return currentValues.filter((value): value is string => typeof value === "string");
   }
 
+  const currentValue = (event as { currentTarget?: { value?: unknown } }).currentTarget?.value;
+  if (typeof currentValue === "string") {
+    return [currentValue];
+  }
+
   const targetValues = (event as { target?: { values?: unknown } }).target?.values;
   if (Array.isArray(targetValues)) {
     return targetValues.filter((value): value is string => typeof value === "string");
+  }
+
+  const targetValue = (event as { target?: { value?: unknown } }).target?.value;
+  if (typeof targetValue === "string") {
+    return [targetValue];
   }
 
   return [];
@@ -85,7 +96,7 @@ export function ItemGrids({
   const handleCooInput = (rowId: string, event: Event) => {
     const [selectedCode] = eventValues(event);
     if (!selectedCode) return;
-    updateLine(rowId, (current) => ({ ...current, coo: selectedCode }));
+    updateLine(rowId, (current) => ({ ...current, coo: selectedCode.toUpperCase() }));
     setActiveCooPopoverRowId(null);
   };
 
@@ -126,12 +137,20 @@ export function ItemGrids({
 
                 const cooQuery = line.coo.trim().toUpperCase();
                 const hasExactCooMatch =
-                  cooQuery.length === 2 && (COO as readonly string[]).includes(cooQuery);
-                const cooSuggestions = (
-                  cooQuery
-                    ? COO.filter((coo) => coo.includes(cooQuery))
-                    : COO
-                ).slice(0, 20);
+                  cooQuery.length === 2 && COO_CODES.includes(cooQuery);
+
+                const cooError =
+                  cooQuery.length === 0
+                    ? null
+                    : cooQuery.length > 2
+                      ? "COO must be exactly 2 characters"
+                      : cooQuery.length === 2 && !COO_CODES.includes(cooQuery)
+                        ? `${cooQuery} is not a valid country code`
+                        : null;
+                const cooSuggestions = COO_CODES.filter((code) => {
+                  const cooLabel = (COO_LABELS[code] ?? "").toUpperCase();
+                  return !cooQuery || code.includes(cooQuery) || cooLabel.includes(cooQuery);
+                });
                 const productPopoverId = `product-popover-${line.rowId}`;
                 const variantPopoverId = `variant-popover-${line.rowId}`;
 
@@ -390,6 +409,7 @@ export function ItemGrids({
                         className="hs-code-field title-field-disabled"
                         value={line.hsCode}
                         disabled
+                        maxLength={7}
                       />
                     </s-table-cell>
 
@@ -405,7 +425,6 @@ export function ItemGrids({
                           <s-text-field
                             className="coo-field"
                             value={line.coo}
-                            maxLength={2}
                             disabled={readOnly}
                             onInput={(event: Event) => {
                               const value = eventValue(event).toUpperCase();
@@ -416,11 +435,16 @@ export function ItemGrids({
                               const cooTrimmed = value.trim();
                               const isExact =
                                 cooTrimmed.length === 2 &&
-                                (COO as readonly string[]).includes(cooTrimmed);
+                                COO_CODES.includes(cooTrimmed);
                               setActiveCooPopoverRowId(isExact ? null : line.rowId);
                             }}
                             onFocus={() => {
                               setActiveCooPopoverRowId(hasExactCooMatch ? null : line.rowId);
+                            }}
+                            onBlur={() => {
+                              window.setTimeout(() => {
+                                setActiveCooPopoverRowId((prev) => (prev === line.rowId ? null : prev));
+                              }, 120);
                             }}
                           />
                           {!readOnly &&
@@ -438,12 +462,13 @@ export function ItemGrids({
                                     key={code}
                                     value={code}
                                   >
-                                    {code}
+                                    {`${code} - ${COO_LABELS[code] ?? code}`}
                                   </s-choice>
                                 ))}
                               </s-choice-list>
                             </div>
                           ) : null}
+                          {cooError ? <s-text color="critical">{cooError}</s-text> : null}
                         </s-stack>
                       )}
                     </s-table-cell>

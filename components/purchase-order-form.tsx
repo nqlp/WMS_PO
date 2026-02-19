@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
-import { COO, CURRENCIES, IMPORT_TYPES } from '@/lib/constants';
+import { COO_CODES, CURRENCIES, IMPORT_TYPES } from '@/lib/constants';
 import { apiFetch } from '@/lib/client/api';
 import { withEmbeddedParams } from '@/lib/client/embedded-url';
 import { useEmbeddedBootstrap, useVendors } from '@/lib/client/hooks';
@@ -437,7 +437,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         return false;
       }
       
-      if (coo && !(COO as readonly string[]).includes(coo)) {
+      if (coo && !COO_CODES.includes(coo)) {
         setSubmitError(`Line ${index + 1}: COO must be a valid ISO country code`);
         return false;
       }
