@@ -125,6 +125,8 @@ export function ItemGrids({
                 );
 
                 const cooQuery = line.coo.trim().toUpperCase();
+                const hasExactCooMatch =
+                  cooQuery.length === 2 && (COO as readonly string[]).includes(cooQuery);
                 const cooSuggestions = (
                   cooQuery
                     ? COO.filter((coo) => coo.includes(cooQuery))
@@ -411,13 +413,20 @@ export function ItemGrids({
                                 ...current,
                                 coo: value
                               }));
-                              setActiveCooPopoverRowId(line.rowId);
+                              const cooTrimmed = value.trim();
+                              const isExact =
+                                cooTrimmed.length === 2 &&
+                                (COO as readonly string[]).includes(cooTrimmed);
+                              setActiveCooPopoverRowId(isExact ? null : line.rowId);
                             }}
                             onFocus={() => {
-                              setActiveCooPopoverRowId(line.rowId);
+                              setActiveCooPopoverRowId(hasExactCooMatch ? null : line.rowId);
                             }}
                           />
-                          {!readOnly && activeCooPopoverRowId === line.rowId && cooSuggestions.length > 0 ? (
+                          {!readOnly &&
+                            activeCooPopoverRowId === line.rowId &&
+                            cooSuggestions.length > 0 &&
+                            !hasExactCooMatch ? (
                             <div style={{ border: '1px solid #d8dce1', borderRadius: "10px", maxHeight: "150px", overflow: "auto", padding: "0.5rem" }}>
                               <s-choice-list
                                 values={line.coo ? [line.coo] : []}
@@ -425,7 +434,10 @@ export function ItemGrids({
                                 onInput={(event: Event) => handleCooInput(line.rowId, event)}
                               >
                                 {cooSuggestions.map((code) => (
-                                  <s-choice key={code} value={code}>
+                                  <s-choice
+                                    key={code}
+                                    value={code}
+                                  >
                                     {code}
                                   </s-choice>
                                 ))}
@@ -435,7 +447,6 @@ export function ItemGrids({
                         </s-stack>
                       )}
                     </s-table-cell>
-
 
                     <s-table-cell>
                       {!readOnly ? (
