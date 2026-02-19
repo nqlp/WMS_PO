@@ -112,380 +112,378 @@ export function ItemGrids({
           ) : null}
         </s-stack>
 
-        <div style={{ overflowX: "auto" }}>
-          <s-table variant="table">
-            <s-table-header-row>
-              <s-table-header>Item</s-table-header>
-              <s-table-header>SKU</s-table-header>
-              <s-table-header className="title-col-header">Product Title</s-table-header>
-              <s-table-header className="title-col-header">Variant Title</s-table-header>
-              <s-table-header format="numeric">Order Qty</s-table-header>
-              <s-table-header format="numeric">Unit Cost</s-table-header>
-              <s-table-header className="currency-col-header">Unit Cost Currency</s-table-header>
-              <s-table-header className="hs-code-header">HS Code</s-table-header>
-              <s-table-header>COO</s-table-header>
-              <s-table-header>Actions</s-table-header>
-            </s-table-header-row>
-            <s-table-body>
-              {lines.map((line, index) => {
-                const lockBySku = immutableBySku.has(line.rowId);
-                const variants = variantPool[line.rowId] ?? [];
-                const currentProductSuggestions = productSuggestions[line.rowId] ?? [];
-                const variantSuggestions = variants.filter((variant) =>
-                  variant.variantTitle.toUpperCase().includes(line.variantTitle.toUpperCase())
-                );
+        <s-table variant="table">
+          <s-table-header-row>
+            <s-table-header className="title-col-header"><span className="table-header-label">Item</span></s-table-header>
+            <s-table-header className="title-col-header"><span className="table-header-label">SKU</span></s-table-header>
+            <s-table-header className="title-col-header"><span className="table-header-label">Product Title</span></s-table-header>
+            <s-table-header className="title-col-header"><span className="table-header-label">Variant Title</span></s-table-header>
+            <s-table-header className="title-col-header" format="numeric"><span className="table-header-label">Order Qty</span></s-table-header>
+            <s-table-header className="title-col-header" format="numeric"><span className="table-header-label">Unit Cost</span></s-table-header>
+            <s-table-header className="title-col-header"><span className="table-header-label">Unit Cost Currency</span></s-table-header>
+            <s-table-header className="title-col-header"><span className="table-header-label">HS Code</span></s-table-header>
+            <s-table-header className="title-col-header"><span className="table-header-label">COO</span></s-table-header>
+            <s-table-header className="title-col-header"><span className="table-header-label">Actions</span></s-table-header>
+          </s-table-header-row>
+          <s-table-body>
+            {lines.map((line, index) => {
+              const lockBySku = immutableBySku.has(line.rowId);
+              const variants = variantPool[line.rowId] ?? [];
+              const currentProductSuggestions = productSuggestions[line.rowId] ?? [];
+              const variantSuggestions = variants.filter((variant) =>
+                variant.variantTitle.toUpperCase().includes(line.variantTitle.toUpperCase())
+              );
 
-                const cooQuery = line.coo.trim().toUpperCase();
-                const hasExactCooMatch =
-                  cooQuery.length === 2 && COO_CODES.includes(cooQuery);
+              const cooQuery = line.coo.trim().toUpperCase();
+              const hasExactCooMatch =
+                cooQuery.length === 2 && COO_CODES.includes(cooQuery);
 
-                const cooError =
-                  cooQuery.length === 0
-                    ? null
-                    : cooQuery.length > 2
-                      ? "COO must be exactly 2 characters"
-                      : cooQuery.length === 2 && !COO_CODES.includes(cooQuery)
-                        ? `${cooQuery} is not a valid country code`
-                        : null;
-                const cooSuggestions = COO_CODES.filter((code) => {
-                  const cooLabel = (COO_LABELS[code] ?? "").toUpperCase();
-                  return !cooQuery || code.includes(cooQuery) || cooLabel.includes(cooQuery);
-                });
-                const productPopoverId = `product-popover-${line.rowId}`;
-                const variantPopoverId = `variant-popover-${line.rowId}`;
+              const cooError =
+                cooQuery.length === 0
+                  ? null
+                  : cooQuery.length > 2
+                    ? "COO must be exactly 2 characters"
+                    : cooQuery.length === 2 && !COO_CODES.includes(cooQuery)
+                      ? `${cooQuery} is not a valid country code`
+                      : null;
+              const cooSuggestions = COO_CODES.filter((code) => {
+                const cooLabel = (COO_LABELS[code] ?? "").toUpperCase();
+                return !cooQuery || code.includes(cooQuery) || cooLabel.includes(cooQuery);
+              });
+              const productPopoverId = `product-popover-${line.rowId}`;
+              const variantPopoverId = `variant-popover-${line.rowId}`;
 
-                return (
-                  <s-table-row key={line.rowId}>
-                    <s-table-cell>
-                      <s-text>{index + 1}</s-text>
-                    </s-table-cell>
+              return (
+                <s-table-row key={line.rowId}>
+                  <s-table-cell>
+                    <s-text>{index + 1}</s-text>
+                  </s-table-cell>
 
-                    <s-table-cell>
-                      <s-stack direction="block" gap="small">
+                  <s-table-cell>
+                    <s-stack direction="block" gap="small">
+                      <s-text-field
+                        value={line.sku}
+                        disabled={readOnly}
+                        onInput={(event: Event) => {
+                          const value = eventValue(event);
+                          updateLine(line.rowId, (current) => ({
+                            ...current,
+                            sku: value,
+                            skuError: null,
+                            variantId: value === current.sku ? current.variantId : null,
+                            coo: value === current.sku ? current.coo : "",
+                            cooLocked: value === current.sku ? current.cooLocked : false,
+                            hsCode: value === current.sku ? current.hsCode : "",
+                            ...(value ? {} : { productId: null, variantId: null, hsCode: "", coo: "", cooLocked: false })
+                          }));
+                        }}
+                        onBlur={() => {
+                          if (line.sku.trim()) {
+                            void validateSkuForLine(line.rowId);
+                          }
+                        }}
+                      />
+                      {line.skuError ? <s-text color="critical">{line.skuError}</s-text> : null}
+                    </s-stack>
+                  </s-table-cell>
+
+                  <s-table-cell className="title-col-cell">
+                    <s-stack direction="block" gap="small">
+                      <s-box className="title-control-wrap">
                         <s-text-field
-                          value={line.sku}
-                          disabled={readOnly}
+                          className={readOnly || lockBySku ? "title-field-disabled" : undefined}
+                          value={line.productTitle}
+                          disabled={readOnly || lockBySku}
                           onInput={(event: Event) => {
                             const value = eventValue(event);
                             updateLine(line.rowId, (current) => ({
                               ...current,
-                              sku: value,
-                              skuError: null,
-                              variantId: value === current.sku ? current.variantId : null,
-                              coo: value === current.sku ? current.coo : "",
-                              cooLocked: value === current.sku ? current.cooLocked : false,
-                              hsCode: value === current.sku ? current.hsCode : "",
-                              ...(value ? {} : { productId: null, variantId: null, hsCode: "", coo: "", cooLocked: false })
+                              productTitle: value,
+                              productId: null,
+                              variantId: null,
+                              variantTitle: ""
                             }));
+                            void searchProducts(line.rowId, value);
                           }}
                           onBlur={() => {
-                            if (line.sku.trim()) {
-                              void validateSkuForLine(line.rowId);
-                            }
+                            window.setTimeout(() => {
+                              setActiveProductPopoverRowId((prev) => (prev === line.rowId ? null : prev));
+                            }, 120);
                           }}
                         />
-                        {line.skuError ? <s-text color="critical">{line.skuError}</s-text> : null}
-                      </s-stack>
-                    </s-table-cell>
+                      </s-box>
 
-                    <s-table-cell className="title-col-cell">
-                      <s-stack direction="block" gap="small">
-                        <s-box className="title-control-wrap">
-                          <s-text-field
-                            className={readOnly || lockBySku ? "title-field-disabled" : undefined}
-                            value={line.productTitle}
-                            disabled={readOnly || lockBySku}
-                            onInput={(event: Event) => {
-                              const value = eventValue(event);
-                              updateLine(line.rowId, (current) => ({
-                                ...current,
-                                productTitle: value,
-                                productId: null,
-                                variantId: null,
-                                variantTitle: ""
-                              }));
-                              void searchProducts(line.rowId, value);
+                      {!readOnly && !lockBySku ? (
+                        <>
+                          <s-button
+                            className="title-suggest-btn"
+                            type="button"
+                            variant="tertiary"
+                            icon="search"
+                            commandFor={productPopoverId}
+                            disabled={currentProductSuggestions.length === 0}
+                            onClick={() => {
+                              if (currentProductSuggestions.length > 0) {
+                                setActiveProductPopoverRowId(line.rowId);
+                              }
                             }}
-                            onBlur={() => {
-                              window.setTimeout(() => {
-                                setActiveProductPopoverRowId((prev) => (prev === line.rowId ? null : prev));
-                              }, 120);
-                            }}
-                          />
-                        </s-box>
+                          >
+                            Product suggestions
+                          </s-button>
 
-                        {!readOnly && !lockBySku ? (
-                          <>
-                            <s-button
-                              className="title-suggest-btn"
-                              type="button"
-                              variant="tertiary"
-                              icon="search"
-                              commandFor={productPopoverId}
-                              disabled={currentProductSuggestions.length === 0}
-                              onClick={() => {
-                                if (currentProductSuggestions.length > 0) {
-                                  setActiveProductPopoverRowId(line.rowId);
-                                }
-                              }}
-                            >
-                              Product suggestions
-                            </s-button>
-
-                            {activeProductPopoverRowId === line.rowId && currentProductSuggestions.length > 0 ? (
-                              <s-popover id={productPopoverId} maxBlockSize="240px" inlineSize="360px">
-                                <s-box padding="base">
-                                  <s-stack direction="block" gap="small">
-                                    <s-heading>Select product</s-heading>
-                                    <s-choice-list
-                                      values={line.productId ? [line.productId] : []}
-                                      onChange={(event: Event) => {
-                                        const [selectedId] = eventValues(event);
-                                        if (!selectedId) {
-                                          return;
-                                        }
-                                        const selected = currentProductSuggestions.find((product) => product.id === selectedId);
-                                        if (selected) {
-                                          selectProduct(line.rowId, selected);
-                                        }
-                                      }}
-                                      onInput={(event: Event) => {
-                                        const [selectedId] = eventValues(event);
-                                        if (!selectedId) {
-                                          return;
-                                        }
-                                        const selected = currentProductSuggestions.find((product) => product.id === selectedId);
-                                        if (selected) {
-                                          selectProduct(line.rowId, selected);
-                                        }
-                                      }}
-                                    >
-                                      {currentProductSuggestions.slice(0, 20).map((product) => (
-                                        <s-choice key={product.id} value={product.id}>
-                                          {`${product.title} (${product.vendor})`}
-                                        </s-choice>
-                                      ))}
-                                    </s-choice-list>
-                                  </s-stack>
-                                </s-box>
-                              </s-popover>
-                            ) : null}
-                          </>
-                        ) : null}
-                      </s-stack>
-                    </s-table-cell>
-
-                    <s-table-cell className="title-col-cell">
-                      <s-stack direction="block" gap="small">
-                        <s-box className="title-control-wrap">
-                          <s-text-field
-                            className={readOnly || lockBySku ? 'title-field-disabled' : undefined}
-                            value={line.variantTitle}
-                            disabled={readOnly || lockBySku}
-                            onInput={(event: Event) => {
-                              const value = eventValue(event);
-                              updateLine(line.rowId, (current) => ({
-                                ...current,
-                                variantTitle: value,
-                                variantId: null
-                              }));
-                              setActiveVariantPopoverRowId(value.trim() ? line.rowId : null);
-                            }}
-                            onBlur={() => {
-                              window.setTimeout(() => {
-                                setActiveVariantPopoverRowId((prev) => (prev === line.rowId ? null : prev));
-                              }, 120);
-                            }}
-                          />
-                        </s-box>
-
-                        {!readOnly && !lockBySku ? (
-                          <>
-                            <s-button
-                              className="title-suggest-btn"
-                              type="button"
-                              variant="tertiary"
-                              icon="search"
-                              commandFor={variantPopoverId}
-                              disabled={variantSuggestions.length === 0}
-                              onClick={() => {
-                                if (variantSuggestions.length > 0) {
-                                  setActiveVariantPopoverRowId(line.rowId);
-                                }
-                              }}
-                            >
-                              Variant suggestions
-                            </s-button>
-
-                            {activeVariantPopoverRowId === line.rowId && variantSuggestions.length > 0 ? (
-                              <s-popover id={variantPopoverId} maxBlockSize="240px" inlineSize="360px">
-                                <s-box padding="base">
-                                  <s-stack direction="block" gap="small">
-                                    <s-heading>Select variant</s-heading>
-                                    <s-choice-list
-                                      values={line.variantId ? [line.variantId] : []}
-                                      onChange={(event: Event) => {
-                                        const [selectedId] = eventValues(event);
-                                        if (!selectedId) {
-                                          return;
-                                        }
-                                        const selected = variantSuggestions.find((variant) => variant.id === selectedId);
-                                        if (selected) {
-                                          selectVariant(line.rowId, selected);
-                                        }
-                                      }}
-                                      onInput={(event: Event) => {
-                                        const [selectedId] = eventValues(event);
-                                        if (!selectedId) {
-                                          return;
-                                        }
-                                        const selected = variantSuggestions.find((variant) => variant.id === selectedId);
-                                        if (selected) {
-                                          selectVariant(line.rowId, selected);
-                                        }
-                                      }}
-                                    >
-                                      {variantSuggestions.slice(0, 20).map((variant) => (
-                                        <s-choice key={variant.id} value={variant.id}>
-                                          {variant.variantTitle}
-                                        </s-choice>
-                                      ))}
-                                    </s-choice-list>
-                                  </s-stack>
-                                </s-box>
-                              </s-popover>
-                            ) : null}
-                          </>
-                        ) : null}
-                      </s-stack>
-                    </s-table-cell>
-
-                    <s-table-cell>
-                      <s-number-field
-                        value={line.orderQty}
-                        min="1"
-                        step="1"
-                        disabled={readOnly}
-                        onInput={(event: Event) =>
-                          updateLine(line.rowId, (current) => ({ ...current, orderQty: eventValue(event) }))
-                        }
-                      />
-                    </s-table-cell>
-
-                    <s-table-cell>
-                      <s-number-field
-                        value={line.unitCost}
-                        min="0"
-                        step="0.01"
-                        disabled={readOnly}
-                        onInput={(event: Event) =>
-                          updateLine(line.rowId, (current) => ({ ...current, unitCost: eventValue(event) }))
-                        }
-                      />
-                    </s-table-cell>
-
-                    <s-table-cell className="currency-col-cell">
-                      <s-select
-                        className="currency-field"
-                        value={line.unitCostCurrency}
-                        disabled={readOnly}
-                        onChange={(event: Event) =>
-                          updateLine(line.rowId, (current) => ({
-                            ...current,
-                            unitCostCurrency: eventValue(event)
-                          }))
-                        }
-                      >
-                        {CURRENCIES.map((currency) => (
-                          <s-option key={currency} value={currency}>
-                            {currency}
-                          </s-option>
-                        ))}
-                      </s-select>
-                    </s-table-cell>
-
-                    <s-table-cell className="hs-code-cell">
-                      <s-text-field
-                        className="hs-code-field title-field-disabled"
-                        value={line.hsCode}
-                        disabled
-                        maxLength={7}
-                      />
-                    </s-table-cell>
-
-                    <s-table-cell className="coo-cell">
-                      {line.cooLocked ? (
-                        <s-text-field
-                          className="coo-field title-field-disabled"
-                          value={line.coo}
-                          disabled
-                        />
-                      ) : (
-                        <s-stack direction="block" gap="small">
-                          <s-text-field
-                            className="coo-field"
-                            value={line.coo}
-                            disabled={readOnly}
-                            onInput={(event: Event) => {
-                              const value = eventValue(event).toUpperCase();
-                              updateLine(line.rowId, (current) => ({
-                                ...current,
-                                coo: value
-                              }));
-                              const cooTrimmed = value.trim();
-                              const isExact =
-                                cooTrimmed.length === 2 &&
-                                COO_CODES.includes(cooTrimmed);
-                              setActiveCooPopoverRowId(isExact ? null : line.rowId);
-                            }}
-                            onFocus={() => {
-                              setActiveCooPopoverRowId(hasExactCooMatch ? null : line.rowId);
-                            }}
-                            onBlur={() => {
-                              window.setTimeout(() => {
-                                setActiveCooPopoverRowId((prev) => (prev === line.rowId ? null : prev));
-                              }, 120);
-                            }}
-                          />
-                          {!readOnly &&
-                            activeCooPopoverRowId === line.rowId &&
-                            cooSuggestions.length > 0 &&
-                            !hasExactCooMatch ? (
-                            <div style={{ border: '1px solid #d8dce1', borderRadius: "10px", maxHeight: "150px", overflow: "auto", padding: "0.5rem" }}>
-                              <s-choice-list
-                                values={line.coo ? [line.coo] : []}
-                                onChange={(event: Event) => handleCooInput(line.rowId, event)}
-                                onInput={(event: Event) => handleCooInput(line.rowId, event)}
-                              >
-                                {cooSuggestions.map((code) => (
-                                  <s-choice
-                                    key={code}
-                                    value={code}
+                          {activeProductPopoverRowId === line.rowId && currentProductSuggestions.length > 0 ? (
+                            <s-popover id={productPopoverId} maxBlockSize="240px" inlineSize="360px">
+                              <s-box padding="base">
+                                <s-stack direction="block" gap="small">
+                                  <s-heading>Select product</s-heading>
+                                  <s-choice-list
+                                    values={line.productId ? [line.productId] : []}
+                                    onChange={(event: Event) => {
+                                      const [selectedId] = eventValues(event);
+                                      if (!selectedId) {
+                                        return;
+                                      }
+                                      const selected = currentProductSuggestions.find((product) => product.id === selectedId);
+                                      if (selected) {
+                                        selectProduct(line.rowId, selected);
+                                      }
+                                    }}
+                                    onInput={(event: Event) => {
+                                      const [selectedId] = eventValues(event);
+                                      if (!selectedId) {
+                                        return;
+                                      }
+                                      const selected = currentProductSuggestions.find((product) => product.id === selectedId);
+                                      if (selected) {
+                                        selectProduct(line.rowId, selected);
+                                      }
+                                    }}
                                   >
-                                    {`${code} - ${COO_LABELS[code] ?? code}`}
-                                  </s-choice>
-                                ))}
-                              </s-choice-list>
-                            </div>
+                                    {currentProductSuggestions.slice(0, 20).map((product) => (
+                                      <s-choice key={product.id} value={product.id}>
+                                        {`${product.title} (${product.vendor})`}
+                                      </s-choice>
+                                    ))}
+                                  </s-choice-list>
+                                </s-stack>
+                              </s-box>
+                            </s-popover>
                           ) : null}
-                          {cooError ? <s-text color="critical">{cooError}</s-text> : null}
-                        </s-stack>
-                      )}
-                    </s-table-cell>
-
-                    <s-table-cell>
-                      {!readOnly ? (
-                        <s-button type="button" variant="secondary" tone="critical" onClick={() => removeLine(line.rowId)}>
-                          Remove
-                        </s-button>
+                        </>
                       ) : null}
-                    </s-table-cell>
-                  </s-table-row>
-                );
-              })}
-            </s-table-body>
-          </s-table>
-        </div>
+                    </s-stack>
+                  </s-table-cell>
+
+                  <s-table-cell className="title-col-cell">
+                    <s-stack direction="block" gap="small">
+                      <s-box className="title-control-wrap">
+                        <s-text-field
+                          className={readOnly || lockBySku ? 'title-field-disabled' : undefined}
+                          value={line.variantTitle}
+                          disabled={readOnly || lockBySku}
+                          onInput={(event: Event) => {
+                            const value = eventValue(event);
+                            updateLine(line.rowId, (current) => ({
+                              ...current,
+                              variantTitle: value,
+                              variantId: null
+                            }));
+                            setActiveVariantPopoverRowId(value.trim() ? line.rowId : null);
+                          }}
+                          onBlur={() => {
+                            window.setTimeout(() => {
+                              setActiveVariantPopoverRowId((prev) => (prev === line.rowId ? null : prev));
+                            }, 120);
+                          }}
+                        />
+                      </s-box>
+
+                      {!readOnly && !lockBySku ? (
+                        <>
+                          <s-button
+                            className="title-suggest-btn"
+                            type="button"
+                            variant="tertiary"
+                            icon="search"
+                            commandFor={variantPopoverId}
+                            disabled={variantSuggestions.length === 0}
+                            onClick={() => {
+                              if (variantSuggestions.length > 0) {
+                                setActiveVariantPopoverRowId(line.rowId);
+                              }
+                            }}
+                          >
+                            Variant suggestions
+                          </s-button>
+
+                          {activeVariantPopoverRowId === line.rowId && variantSuggestions.length > 0 ? (
+                            <s-popover id={variantPopoverId} maxBlockSize="240px" inlineSize="360px">
+                              <s-box padding="base">
+                                <s-stack direction="block" gap="small">
+                                  <s-heading>Select variant</s-heading>
+                                  <s-choice-list
+                                    values={line.variantId ? [line.variantId] : []}
+                                    onChange={(event: Event) => {
+                                      const [selectedId] = eventValues(event);
+                                      if (!selectedId) {
+                                        return;
+                                      }
+                                      const selected = variantSuggestions.find((variant) => variant.id === selectedId);
+                                      if (selected) {
+                                        selectVariant(line.rowId, selected);
+                                      }
+                                    }}
+                                    onInput={(event: Event) => {
+                                      const [selectedId] = eventValues(event);
+                                      if (!selectedId) {
+                                        return;
+                                      }
+                                      const selected = variantSuggestions.find((variant) => variant.id === selectedId);
+                                      if (selected) {
+                                        selectVariant(line.rowId, selected);
+                                      }
+                                    }}
+                                  >
+                                    {variantSuggestions.slice(0, 20).map((variant) => (
+                                      <s-choice key={variant.id} value={variant.id}>
+                                        {variant.variantTitle}
+                                      </s-choice>
+                                    ))}
+                                  </s-choice-list>
+                                </s-stack>
+                              </s-box>
+                            </s-popover>
+                          ) : null}
+                        </>
+                      ) : null}
+                    </s-stack>
+                  </s-table-cell>
+
+                  <s-table-cell>
+                    <s-number-field
+                      value={line.orderQty}
+                      min="1"
+                      step="1"
+                      disabled={readOnly}
+                      onInput={(event: Event) =>
+                        updateLine(line.rowId, (current) => ({ ...current, orderQty: eventValue(event) }))
+                      }
+                    />
+                  </s-table-cell>
+
+                  <s-table-cell>
+                    <s-number-field
+                      value={line.unitCost}
+                      min="0"
+                      step="0.01"
+                      disabled={readOnly}
+                      onInput={(event: Event) =>
+                        updateLine(line.rowId, (current) => ({ ...current, unitCost: eventValue(event) }))
+                      }
+                    />
+                  </s-table-cell>
+
+                  <s-table-cell className="currency-col-cell">
+                    <s-select
+                      className="currency-field"
+                      value={line.unitCostCurrency}
+                      disabled={readOnly}
+                      onChange={(event: Event) =>
+                        updateLine(line.rowId, (current) => ({
+                          ...current,
+                          unitCostCurrency: eventValue(event)
+                        }))
+                      }
+                    >
+                      {CURRENCIES.map((currency) => (
+                        <s-option key={currency} value={currency}>
+                          {currency}
+                        </s-option>
+                      ))}
+                    </s-select>
+                  </s-table-cell>
+
+                  <s-table-cell>
+                    <s-text-field
+                      className="hs-code-field title-field-disabled"
+                      value={line.hsCode}
+                      disabled
+                      maxLength={7}
+                    />
+                  </s-table-cell>
+
+                  <s-table-cell>
+                    {line.cooLocked ? (
+                      <s-text-field
+                        className="coo-field title-field-disabled"
+                        value={line.coo}
+                        disabled
+                      />
+                    ) : (
+                      <s-stack direction="block" gap="small">
+                        <s-text-field
+                          className="coo-field"
+                          value={line.coo}
+                          disabled={readOnly}
+                          onInput={(event: Event) => {
+                            const value = eventValue(event).toUpperCase();
+                            updateLine(line.rowId, (current) => ({
+                              ...current,
+                              coo: value
+                            }));
+                            const cooTrimmed = value.trim();
+                            const isExact =
+                              cooTrimmed.length === 2 &&
+                              COO_CODES.includes(cooTrimmed);
+                            setActiveCooPopoverRowId(isExact ? null : line.rowId);
+                          }}
+                          onFocus={() => {
+                            setActiveCooPopoverRowId(hasExactCooMatch ? null : line.rowId);
+                          }}
+                          onBlur={() => {
+                            window.setTimeout(() => {
+                              setActiveCooPopoverRowId((prev) => (prev === line.rowId ? null : prev));
+                            }, 120);
+                          }}
+                        />
+                        {!readOnly &&
+                          activeCooPopoverRowId === line.rowId &&
+                          cooSuggestions.length > 0 &&
+                          !hasExactCooMatch ? (
+                          <div style={{ border: '1px solid #d8dce1', borderRadius: "10px", maxHeight: "150px", overflow: "auto", padding: "0.5rem" }}>
+                            <s-choice-list
+                              values={line.coo ? [line.coo] : []}
+                              onChange={(event: Event) => handleCooInput(line.rowId, event)}
+                              onInput={(event: Event) => handleCooInput(line.rowId, event)}
+                            >
+                              {cooSuggestions.map((code) => (
+                                <s-choice
+                                  key={code}
+                                  value={code}
+                                >
+                                  {`${code} - ${COO_LABELS[code] ?? code}`}
+                                </s-choice>
+                              ))}
+                            </s-choice-list>
+                          </div>
+                        ) : null}
+                        {cooError ? <s-text color="critical">{cooError}</s-text> : null}
+                      </s-stack>
+                    )}
+                  </s-table-cell>
+
+                  <s-table-cell>
+                    {!readOnly ? (
+                      <s-button type="button" variant="secondary" tone="critical" onClick={() => removeLine(line.rowId)}>
+                        Remove
+                      </s-button>
+                    ) : null}
+                  </s-table-cell>
+                </s-table-row>
+              );
+            })}
+          </s-table-body>
+        </s-table>
       </s-stack>
     </s-section>
   );

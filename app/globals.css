@@ -164,10 +164,6 @@ button {
   color: var(--danger);
 }
 
-.table-scroll {
-  overflow-x: auto;
-}
-
 table {
   width: 100%;
   border-collapse: collapse;
@@ -244,27 +240,9 @@ tr:last-child td {
   margin-top: 0.5rem;
 }
 
-.is-sku-loading,
-.is-sku-loading * {
-  cursor: progress !important;
-}
-
 body.sku-loading-cursor,
 body.sku-loading-cursor * {
   cursor: progress !important;
-}
-
-s-table-header.hs-code-header,
-s-table-cell.hs-code-cell {
-  width: 22rem !important;
-  min-width: 22rem !important;
-}
-
-s-text-field.hs-code-field {
-  display: inline-block !important;
-  width: 22rem !important;
-  min-width: 22rem !important;
-  max-width: 22rem !important;
 }
 
 s-text-field.title-field-disabled {
@@ -273,10 +251,18 @@ s-text-field.title-field-disabled {
   pointer-events: none;
 }
 
-s-table-header.title-col-header,
+s-table-header.title-col-header {
+  min-width: 0 !important;
+}
+
+.table-header-label {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
 s-table-cell.title-col-cell {
-  width: 24rem !important;
-  min-width: 24rem !important;
+  min-width: 0 !important;
 }
 
 s-table-header.currency-col-header,

@@ -530,7 +530,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
 
   if (bootstrap.loading) {
     return (
-      <s-page>
+      <s-page heading="Purchase Order Form" inlineSize="large">
         <s-section>
           <s-banner tone="info">Initializing embedded Shopify session...</s-banner>
         </s-section>
@@ -540,7 +540,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
 
   if (bootstrap.error) {
     return (
-      <s-page>
+      <s-page heading="Purchase Order Form" inlineSize="large">
         <s-section>
           <s-banner tone="critical">{bootstrap.error}</s-banner>
         </s-section>
@@ -549,7 +549,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
   }
 
   return (
-    <s-page className={isSkuValidationLoading ? "is-sku-loading" : undefined}>
+    <s-page heading="Purchase Order Form" inlineSize="large" className={isSkuValidationLoading ? "is-sku-loading" : undefined}>
       <s-section>
         <s-stack direction="block" gap="base">
           <s-heading>{title}</s-heading>
