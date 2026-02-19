@@ -571,7 +571,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
             >
               <s-box style={{ gridColumn: 'span 4' }}>
                 <s-select label="Vendor" value={vendor} disabled={readOnly} onChange={(event: Event) => setVendor(eventValue(event))}>
-                  <s-option value="" disabled>
+                  <s-option value="">
                     {loadingVendors ? "Loading vendors..." : "Select Vendor"}
                   </s-option>
                   {allVendorOptions.map((option) => (
