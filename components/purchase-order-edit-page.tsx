@@ -28,9 +28,10 @@ export function PurchaseOrderEditPage({ poNumber }: PurchaseOrderEditPageProps) 
         if (mounted) {
           setPurchaseOrder(response.purchaseOrder);
         }
-      } catch (cause) {
+      } catch (error) {
         if (mounted) {
-          setError(cause instanceof Error ? cause.message : 'Failed to load purchase order');
+          console.error("Failed to load purchase order:", error);
+          setError(error instanceof Error ? error.message : "Failed to load purchase order");
         }
       }
     })();
@@ -57,7 +58,7 @@ export function PurchaseOrderEditPage({ poNumber }: PurchaseOrderEditPageProps) 
       mode="edit"
       title={`Modify Purchase Order #${purchaseOrder.poNumber}`}
       initialData={purchaseOrder}
-      readOnly={purchaseOrder.status === 'ARCHIVED'}
+      readOnly={purchaseOrder.status === "ARCHIVED"}
     />
   );
 }

@@ -213,63 +213,43 @@ export function ItemGrids({
                         />
                       </s-box>
 
-                      {!readOnly && !lockBySku ? (
-                        <>
-                          <s-button
-                            className="title-suggest-btn"
-                            type="button"
-                            variant="tertiary"
-                            icon="search"
-                            commandFor={productPopoverId}
-                            disabled={currentProductSuggestions.length === 0}
-                            onClick={() => {
-                              if (currentProductSuggestions.length > 0) {
-                                setActiveProductPopoverRowId(line.rowId);
-                              }
-                            }}
-                          >
-                            Product suggestions
-                          </s-button>
-
-                          {activeProductPopoverRowId === line.rowId && currentProductSuggestions.length > 0 ? (
-                            <s-popover id={productPopoverId} maxBlockSize="240px" inlineSize="360px">
-                              <s-box padding="base">
-                                <s-stack direction="block" gap="small">
-                                  <s-heading>Select product</s-heading>
-                                  <s-choice-list
-                                    values={line.productId ? [line.productId] : []}
-                                    onChange={(event: Event) => {
-                                      const [selectedId] = eventValues(event);
-                                      if (!selectedId) {
-                                        return;
-                                      }
-                                      const selected = currentProductSuggestions.find((product) => product.id === selectedId);
-                                      if (selected) {
-                                        selectProduct(line.rowId, selected);
-                                      }
-                                    }}
-                                    onInput={(event: Event) => {
-                                      const [selectedId] = eventValues(event);
-                                      if (!selectedId) {
-                                        return;
-                                      }
-                                      const selected = currentProductSuggestions.find((product) => product.id === selectedId);
-                                      if (selected) {
-                                        selectProduct(line.rowId, selected);
-                                      }
-                                    }}
-                                  >
-                                    {currentProductSuggestions.slice(0, 20).map((product) => (
-                                      <s-choice key={product.id} value={product.id}>
-                                        {`${product.title} (${product.vendor})`}
-                                      </s-choice>
-                                    ))}
-                                  </s-choice-list>
-                                </s-stack>
-                              </s-box>
-                            </s-popover>
-                          ) : null}
-                        </>
+                      {!readOnly && !lockBySku && activeProductPopoverRowId === line.rowId && currentProductSuggestions.length > 0 ? (
+                        <s-popover id={productPopoverId} maxBlockSize="240px" inlineSize="360px">
+                          <s-box padding="base">
+                            <s-stack direction="block" gap="small">
+                              <s-heading>Select product</s-heading>
+                              <s-choice-list
+                                values={line.productId ? [line.productId] : []}
+                                onChange={(event: Event) => {
+                                  const [selectedId] = eventValues(event);
+                                  if (!selectedId) {
+                                    return;
+                                  }
+                                  const selected = currentProductSuggestions.find((product) => product.id === selectedId);
+                                  if (selected) {
+                                    selectProduct(line.rowId, selected);
+                                  }
+                                }}
+                                onInput={(event: Event) => {
+                                  const [selectedId] = eventValues(event);
+                                  if (!selectedId) {
+                                    return;
+                                  }
+                                  const selected = currentProductSuggestions.find((product) => product.id === selectedId);
+                                  if (selected) {
+                                    selectProduct(line.rowId, selected);
+                                  }
+                                }}
+                              >
+                                {currentProductSuggestions.slice(0, 20).map((product) => (
+                                  <s-choice key={product.id} value={product.id}>
+                                    {`${product.title} (${product.vendor})`}
+                                  </s-choice>
+                                ))}
+                              </s-choice-list>
+                            </s-stack>
+                          </s-box>
+                        </s-popover>
                       ) : null}
                     </s-stack>
                   </s-table-cell>
