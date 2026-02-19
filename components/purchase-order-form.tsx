@@ -8,6 +8,7 @@ import { apiFetch } from '@/lib/client/api';
 import { withEmbeddedParams } from '@/lib/client/embedded-url';
 import { useEmbeddedBootstrap, useVendors } from '@/lib/client/hooks';
 import { ItemGrids } from '@/components/ItemGrids';
+import { normalizeHsCode } from '@/lib/helper';
 
 interface PurchaseOrderItemDto {
   poItem: number;
@@ -165,7 +166,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         orderQty: String(item.orderQty),
         unitCost: decimalText(item.unitCost),
         unitCostCurrency: item.unitCostCurrency ?? DEFAULT_CURRENCY,
-        hsCode: item.hsCode ?? "",
+        hsCode: normalizeHsCode(item.hsCode) ?? "",
         coo: item.coo ?? "",
         cooLocked: false,
         skuError: null
@@ -305,7 +306,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         variantTitle: match.variantTitle,
         coo: match.coo ?? "",
         cooLocked: Boolean(match.coo),
-        hsCode: match.hsCode ?? "",
+        hsCode: normalizeHsCode(match.hsCode) ?? "",
         skuError: null
       }));
 
@@ -381,7 +382,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       sku: line.sku || variant.sku || "",
       coo: variant.coo ?? "",
       cooLocked: Boolean(variant.coo),
-      hsCode: variant.hsCode ?? "",
+      hsCode: normalizeHsCode(variant.hsCode) ?? "",
       skuError: null
     }));
     setActiveVariantPopoverRowId((prev) => (prev === rowId ? null : prev));

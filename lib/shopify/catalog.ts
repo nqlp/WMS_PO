@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import type { AuthenticatedSession } from '@/lib/auth/session-token';
 import { runShopifyGraphql } from '@/lib/shopify/graphql';
+import { normalizeHsCode } from '@/lib/helper';
 
 const VENDOR_CACHE_TTL_MS = 30 * 60 * 1_000;
 
@@ -218,7 +219,7 @@ export async function searchProducts(session: AuthenticatedSession, rawQuery: st
       title: variant.title,
       variantTitle: toVariantTitle(variant.selectedOptions, variant.title),
       coo: variant.inventoryItem?.countryCodeOfOrigin?.trim() || null,
-      hsCode: variant.inventoryItem?.harmonizedSystemCode?.trim() || null
+      hsCode: normalizeHsCode(variant.inventoryItem?.harmonizedSystemCode)
     }))
   }));
 }
@@ -262,7 +263,7 @@ export async function getProductVariants(session: AuthenticatedSession, productI
     title: variant.title,
     variantTitle: toVariantTitle(variant.selectedOptions, variant.title),
     coo: variant.inventoryItem?.countryCodeOfOrigin?.trim() || null,
-    hsCode: variant.inventoryItem?.harmonizedSystemCode?.trim() || null,
+    hsCode: normalizeHsCode(variant.inventoryItem?.harmonizedSystemCode),
   }));
 }
 
@@ -310,6 +311,6 @@ export async function validateSku(session: AuthenticatedSession, rawSku: string)
       productTitle: variant.product.title,
       variantTitle: toVariantTitle(variant.selectedOptions, "Default Title"),
       coo: variant.inventoryItem?.countryCodeOfOrigin?.trim() || null,
-      hsCode: variant.inventoryItem?.harmonizedSystemCode?.trim() || null
+      hsCode: normalizeHsCode(variant.inventoryItem?.harmonizedSystemCode)
     }));
 }
