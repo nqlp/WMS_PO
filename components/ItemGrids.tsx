@@ -81,6 +81,14 @@ export function ItemGrids({
   activeCooPopoverRowId,
   setActiveCooPopoverRowId
 }: ItemGridsProps) {
+
+  const handleCooInput = (rowId: string, event: Event) => {
+    const [selectedCode] = eventValues(event);
+    if (!selectedCode) return;
+    updateLine(rowId, (current) => ({ ...current, coo: selectedCode }));
+    setActiveCooPopoverRowId(null);
+  };
+
   return (
     <s-section>
       <s-stack direction="block" gap="base">
@@ -124,7 +132,6 @@ export function ItemGrids({
                 ).slice(0, 20);
                 const productPopoverId = `product-popover-${line.rowId}`;
                 const variantPopoverId = `variant-popover-${line.rowId}`;
-                const cooPopoverId = `coo-popover-${line.rowId}`;
 
                 return (
                   <s-table-row key={line.rowId}>
@@ -411,28 +418,19 @@ export function ItemGrids({
                             }}
                           />
                           {!readOnly && activeCooPopoverRowId === line.rowId && cooSuggestions.length > 0 ? (
-                            <s-popover id={cooPopoverId} maxBlockSize="240px" inlineSize="240px">
-                              <s-box padding="base">
-                                <s-stack direction="block" gap="small">
-                                  <s-heading>Select country</s-heading>
-                                  <s-choice-list
-                                    values={line.coo ? [line.coo] : []}
-                                    onChange={(event: Event) => {
-                                      const [selectedCode] = eventValues(event);
-                                      if (!selectedCode) return;
-                                      updateLine(line.rowId, (current) => ({ ...current, coo: selectedCode }));
-                                      setActiveCooPopoverRowId(null);
-                                    }}
-                                  >
-                                    {cooSuggestions.map((code) => (
-                                      <s-choice key={code} value={code}>
-                                        {code}
-                                      </s-choice>
-                                    ))}
-                                  </s-choice-list>
-                                </s-stack>
-                              </s-box>
-                            </s-popover>
+                            <div style={{ border: '1px solid #d8dce1', borderRadius: "10px", maxHeight: "150px", overflow: "auto", padding: "0.5rem" }}>
+                              <s-choice-list
+                                values={line.coo ? [line.coo] : []}
+                                onChange={(event: Event) => handleCooInput(line.rowId, event)}
+                                onInput={(event: Event) => handleCooInput(line.rowId, event)}
+                              >
+                                {cooSuggestions.map((code) => (
+                                  <s-choice key={code} value={code}>
+                                    {code}
+                                  </s-choice>
+                                ))}
+                              </s-choice-list>
+                            </div>
                           ) : null}
                         </s-stack>
                       )}
