@@ -135,8 +135,6 @@ button {
   cursor: pointer;
 }
 
-.btn-primary,
-.btn-neutral,
 .btn-danger {
   display: inline-flex;
   align-items: center;

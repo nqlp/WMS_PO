@@ -496,14 +496,16 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       setSubmitting(true);
       setSuccessMessage(null);
       if (mode === "create") {
-        const created = await apiFetch<{ poNumber: string }>('/api/purchase-orders', {
+        const created = await apiFetch<{ poNumber: string }>("/api/purchase-orders", {
           method: "POST",
           csrfToken: bootstrap.csrfToken,
           body: JSON.stringify(payload)
         });
 
         setSuccessMessage(`Purchase order #${created.poNumber} created successfully.`);
-        router.push(purchaseOrdersHref);
+
+        const nextListHref = withEmbeddedParams(`/purchase-orders?createdPoNumber=${encodeURIComponent(created.poNumber)}`, searchParams);
+        router.push(nextListHref);
         router.refresh();
       } else {
         const poNumber = initialData?.poNumber;
@@ -654,22 +656,6 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
               </s-box>
             </s-grid>
           </s-query-container>
-          <s-stack direction="inline" gap="small">
-            {!readOnly ? (
-              <s-button type="button" variant="primary" onClick={() => void submit()} disabled={submitting}>
-                {submitting ? "Saving..." : mode === "create" ? "Create Purchase Order" : "Save Changes"}
-              </s-button>
-            ) : null}
-            <s-button
-              type="button"
-              variant="secondary"
-              onClick={() => {
-                router.push(purchaseOrdersHref);
-              }}
-            >
-              Back to list
-            </s-button>
-          </s-stack>
         </s-stack>
       </s-section>
       <ItemGrids
@@ -692,6 +678,21 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         activeCooPopoverRowId={activeCooPopoverRowId}
         setActiveCooPopoverRowId={setActiveCooPopoverRowId}
       />
+      <s-stack direction="inline" gap="small">
+            {!readOnly ? (
+              <s-button type="submit" variant="primary" onClick={() => submit()} disabled={submitting}>
+                {submitting ? "Saving..." : mode === "create" ? "Create Purchase Order" : "Save Changes"}
+              </s-button>
+            ) : null}
+            <s-button
+              variant="secondary"
+              onClick={() => {
+                router.push(purchaseOrdersHref);
+              }}
+            >
+              Back to list
+            </s-button>
+          </s-stack>
     </s-page>
   );
 }

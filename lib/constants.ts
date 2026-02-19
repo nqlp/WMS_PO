@@ -7,6 +7,12 @@ export const PO_HEADER_STATUS = [
   "ARCHIVED"
 ] as const;
 
+export const PO_IMPORT_DUTIES = [
+  "All",
+  "Yes",
+  "No"
+] as const;
+
 export const PO_ITEM_STATUS = [
   "OPEN",
   "PART_RECEIVED",
