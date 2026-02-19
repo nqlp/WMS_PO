@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { apiFetch } from '@/lib/client/api';
+import { withEmbeddedParams } from '@/lib/client/embedded-url';
 import { useEmbeddedBootstrap } from '@/lib/client/hooks';
 import { IMPORT_TYPES, PO_HEADER_STATUS } from '@/lib/constants';
 
@@ -99,6 +100,7 @@ function formatDate(value: string | null): string {
 
 
 export function PurchaseOrderListPage() {
+  const router = useRouter();
   const bootstrap = useEmbeddedBootstrap();
   const [vendors, setVendors] = useState<string[]>([]);
   const [filters, setFilters] = useState<FiltersState>(EMPTY_FILTERS);
@@ -635,6 +637,15 @@ export function PurchaseOrderListPage() {
                       }}
                     >
                       Check-in
+                    </s-button>
+
+                    <s-button
+                      variant="primary"
+                      onClick={() => {
+                        router.push(withEmbeddedParams(`/purchase-orders/${row.poNumber}/edit`, searchParams));
+                      }}
+                    >
+                      Modify
                     </s-button>
                   </s-stack>
                   {inlineErrors[row.poNumber] ? (
