@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
-import { COO_CODES, CURRENCIES, IMPORT_TYPES } from '@/lib/constants';
+import { COO_CODES, DEFAULT_CURRENCY, IMPORT_TYPES } from '@/lib/constants';
 import { apiFetch } from '@/lib/client/api';
 import { withEmbeddedParams } from '@/lib/client/embedded-url';
 import { useEmbeddedBootstrap, useVendors } from '@/lib/client/hooks';
 import { ItemGrids } from '@/components/ItemGrids';
+import { CurrencyOptions } from '@/components/currency-options';
 import { normalizeHsCode } from '@/lib/helper';
 
 interface PurchaseOrderItemDto {
@@ -74,8 +75,6 @@ interface PurchaseOrderFormProps {
   initialData?: PurchaseOrderDto;
   readOnly?: boolean;
 }
-
-const DEFAULT_CURRENCY = "CAD";
 
 function lineId(): string {
   return Math.random().toString(36).slice(2, 12);
@@ -437,7 +436,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         setSubmitError(`Line ${index + 1}: COO must be 2 characters`);
         return false;
       }
-      
+
       if (coo && !COO_CODES.includes(coo)) {
         setSubmitError(`Line ${index + 1}: COO must be a valid ISO country code`);
         return false;
@@ -569,9 +568,9 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
           <s-query-container>
             <s-grid
               gap="base"
-              gridTemplateColumns="@container (inline-size < 900px) 1fr, repeat(12, minmax(0, 1fr))"
+              gridTemplateColumns="repeat(auto-fit, minmax(240px, 1fr))"
             >
-              <s-box style={{ gridColumn: 'span 4' }}>
+              <s-grid-item>
                 <s-select label="Vendor" value={vendor} disabled={readOnly} onChange={(event: Event) => setVendor(eventValue(event))}>
                   <s-option value="">
                     {loadingVendors ? "Loading vendors..." : "Select Vendor"}
@@ -582,9 +581,9 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
                     </s-option>
                   ))}
                 </s-select>
-              </s-box>
+              </s-grid-item>
 
-              <s-box style={{ gridColumn: 'span 4' }}>
+              <s-grid-item>
                 <s-select
                   label="Import Duties"
                   value={importDuties ? "true" : "false"}
@@ -594,9 +593,9 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
                   <s-option value="false">No</s-option>
                   <s-option value="true">Yes</s-option>
                 </s-select>
-              </s-box>
+              </s-grid-item>
 
-              <s-box style={{ gridColumn: 'span 4' }}>
+              <s-grid-item>
                 <s-select
                   label="Import Type"
                   value={importType}
@@ -609,18 +608,20 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
                     </s-option>
                   ))}
                 </s-select>
-              </s-box>
+              </s-grid-item>
 
-              <s-box style={{ gridColumn: 'span 3' }}>
+              <s-grid-item>
                 <s-date-field
+                  type="single"
                   label="Expected On"
                   value={expectedDate}
                   disabled={readOnly}
+                  style={{ inlineSize: "100%" }}
                   onChange={(event: Event) => setExpectedDate(eventValue(event))}
                 />
-              </s-box>
+              </s-grid-item>
 
-              <s-box style={{ gridColumn: 'span 3' }}>
+              <s-grid-item>
                 <s-number-field
                   label="Shipping Fees"
                   value={shippingFees}
@@ -629,31 +630,27 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
                   disabled={readOnly}
                   onInput={(event: Event) => setShippingFees(eventValue(event))}
                 />
-              </s-box>
+              </s-grid-item>
 
-              <s-box style={{ gridColumn: 'span 3' }}>
+              <s-grid-item>
                 <s-select
                   label="Shipping Fees Currency"
                   value={shippingFeesCurrency}
                   disabled={readOnly}
                   onChange={(event: Event) => setShippingFeesCurrency(eventValue(event))}
                 >
-                  {CURRENCIES.map((option) => (
-                    <s-option key={option} value={option}>
-                      {option}
-                    </s-option>
-                  ))}
+                  <CurrencyOptions />
                 </s-select>
-              </s-box>
+              </s-grid-item>
 
-              <s-box style={{ gridColumn: 'span 12' }}>
+              <s-grid-item>
                 <s-text-area
                   label="Notes"
                   value={notes}
                   disabled={readOnly}
                   onInput={(event: Event) => setNotes(eventValue(event))}
                 />
-              </s-box>
+              </s-grid-item>
             </s-grid>
           </s-query-container>
         </s-stack>
@@ -679,20 +676,20 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         setActiveCooPopoverRowId={setActiveCooPopoverRowId}
       />
       <s-stack direction="inline" gap="small">
-            {!readOnly ? (
-              <s-button type="submit" variant="primary" onClick={() => submit()} disabled={submitting}>
-                {submitting ? "Saving..." : mode === "create" ? "Create Purchase Order" : "Save Changes"}
-              </s-button>
-            ) : null}
-            <s-button
-              variant="secondary"
-              onClick={() => {
-                router.push(purchaseOrdersHref);
-              }}
-            >
-              Back to list
-            </s-button>
-          </s-stack>
+        {!readOnly ? (
+          <s-button type="submit" variant="primary" onClick={() => submit()} disabled={submitting}>
+            {submitting ? "Saving..." : mode === "create" ? "Create Purchase Order" : "Save Changes"}
+          </s-button>
+        ) : null}
+        <s-button
+          variant="secondary"
+          onClick={() => {
+            router.push(purchaseOrdersHref);
+          }}
+        >
+          Back to list
+        </s-button>
+      </s-stack>
     </s-page>
   );
 }

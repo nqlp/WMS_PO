@@ -27,11 +27,6 @@ main {
   padding: 1.25rem;
 }
 
-.page-shell {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
 .center-logo-page {
   min-height: calc(100vh - 2.5rem);
   display: flex;
@@ -50,51 +45,6 @@ main {
   border-radius: 14px;
   padding: 1rem;
   box-shadow: 0 6px 18px rgba(17, 24, 39, 0.06);
-}
-
-.layout-col {
-  display: grid;
-  gap: 1rem;
-}
-
-.layout-row {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-}
-
-.col-3 {
-  grid-column: span 3;
-}
-
-.col-4 {
-  grid-column: span 4;
-}
-
-.col-6 {
-  grid-column: span 6;
-}
-
-.col-8 {
-  grid-column: span 8;
-}
-
-.col-12 {
-  grid-column: span 12;
-}
-
-@media (max-width: 900px) {
-  .layout-row {
-    grid-template-columns: 1fr;
-  }
-
-  .col-3,
-  .col-4,
-  .col-6,
-  .col-8,
-  .col-12 {
-    grid-column: auto;
-  }
 }
 
 label {
@@ -126,72 +76,6 @@ textarea {
 textarea {
   min-height: 84px;
   resize: vertical;
-}
-
-button {
-  border: 1px solid transparent;
-  border-radius: 999px;
-  padding: 0.5rem 0.95rem;
-  cursor: pointer;
-}
-
-.btn-danger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  padding: 0.5rem 0.95rem;
-  cursor: pointer;
-}
-
-.btn-primary {
-  background: #0b63ce;
-  color: white;
-}
-
-.btn-neutral {
-  background: #fff;
-  border-color: var(--border);
-}
-
-.btn-danger {
-  background: #fff;
-  border-color: #f0becd;
-  color: var(--danger);
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 980px;
-  background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-thead {
-  background: #f8fafd;
-}
-
-th,
-td {
-  padding: 0.6rem;
-  border-bottom: 1px solid #eef2f7;
-  vertical-align: top;
-  text-align: left;
-}
-
-th {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #5b6576;
-}
-
-tr:last-child td {
-  border-bottom: 0;
 }
 
 .status-pill {
@@ -266,11 +150,13 @@ s-table-cell.title-col-cell {
 s-table-header.currency-col-header,
 s-table-cell.currency-col-cell {
   width: 5rem;
+  text-align: center;
 }
 
 s-select.currency-field {
-  display: inline-block;
+  display: block;
   width: 5rem;
+  margin-inline: auto;
 }
 
 s-box.title-control-wrap {

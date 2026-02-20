@@ -1,6 +1,7 @@
 import type { PoHeader, PoItem, Prisma } from '@prisma/client';
 
 import type { AuthenticatedSession } from '@/lib/auth/session-token';
+import { DEFAULT_CURRENCY } from '@/lib/constants';
 import { ApiError } from '@/lib/http';
 import { prisma } from '@/lib/prisma';
 import type {
@@ -79,7 +80,7 @@ function toItemCreateInput(
     receivedQty,
     status: carryForward?.status ?? 'OPEN',
     unitCost: line.unitCost ?? null,
-    unitCostCurrency: line.unitCostCurrency ?? 'CAD',
+    unitCostCurrency: line.unitCostCurrency ?? DEFAULT_CURRENCY,
     hsCode: parseNullableText(line.hsCode),
     coo: parseNullableText(line.coo)?.toUpperCase() ?? null,
     lastReceivingDate: carryForward?.lastReceivingDate ?? null,
@@ -103,7 +104,7 @@ export async function createPurchaseOrder(session: AuthenticatedSession, input: 
         importType: input.header.importType,
         expectedDate: parseDate(input.header.expectedDate),
         shippingFees: input.header.shippingFees ?? null,
-        shippingFeesCurrency: input.header.shippingFeesCurrency ?? 'CAD',
+        shippingFeesCurrency: input.header.shippingFeesCurrency ?? DEFAULT_CURRENCY,
         notes: parseNullableText(input.header.notes)
       }
     });
@@ -311,7 +312,7 @@ export async function updatePurchaseOrder(
         importType: input.header.importType,
         expectedDate: parseDate(input.header.expectedDate),
         shippingFees: input.header.shippingFees ?? null,
-        shippingFeesCurrency: input.header.shippingFeesCurrency ?? 'CAD',
+        shippingFeesCurrency: input.header.shippingFeesCurrency ?? DEFAULT_CURRENCY,
         notes: parseNullableText(input.header.notes)
       }
     });

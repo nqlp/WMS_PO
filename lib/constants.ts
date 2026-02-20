@@ -34,6 +34,7 @@ export type PoHeaderStatus = (typeof PO_HEADER_STATUS)[number];
 export type PoItemStatus = (typeof PO_ITEM_STATUS)[number];
 export type ImportType = (typeof IMPORT_TYPES)[number];
 export type Currency = (typeof CURRENCIES)[number];
+export const DEFAULT_CURRENCY: Currency = "CAD";
 
  export const COO_LABELS: Record<string, string> = {
   AC: "Ascension Island",

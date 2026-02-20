@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { COO_LABELS, CURRENCIES, IMPORT_TYPES, PO_HEADER_STATUS } from '@/lib/constants';
+import { COO_LABELS, CURRENCIES, DEFAULT_CURRENCY, IMPORT_TYPES, PO_HEADER_STATUS } from '@/lib/constants';
 
 const currencySchema = z.enum(CURRENCIES);
 const importTypeSchema = z.enum(IMPORT_TYPES);
@@ -32,7 +32,7 @@ const lineSchema = z.object({
   variantTitle: z.string().trim().min(1),
   orderQty: z.number().int().min(1),
   unitCost: nonNegativeMoneySchema.optional().nullable(),
-  unitCostCurrency: currencySchema.default('CAD'),
+  unitCostCurrency: currencySchema.default(DEFAULT_CURRENCY),
   hsCode: z.string().trim().max(255).optional().nullable(),
   coo: z
     .string()

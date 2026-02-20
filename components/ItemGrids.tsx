@@ -1,8 +1,9 @@
 "use client";
 
 import { Dispatch, SetStateAction } from 'react';
-import { COO_CODES, COO_LABELS, CURRENCIES } from '@/lib/constants';
+import { COO_CODES, COO_LABELS } from '@/lib/constants';
 import type { FormLine, ProductOption, VariantOption } from '@/components/purchase-order-form';
+import { CurrencyOptions } from '@/components/currency-options';
 
 // Helper functions to extract values from events
 function eventValue(event: unknown): string {
@@ -322,11 +323,7 @@ export function ItemGrids({
                         }))
                       }
                     >
-                      {CURRENCIES.map((currency) => (
-                        <s-option key={currency} value={currency}>
-                          {currency}
-                        </s-option>
-                      ))}
+                      <CurrencyOptions />
                     </s-select>
                   </s-table-cell>
 
