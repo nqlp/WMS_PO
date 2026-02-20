@@ -2,7 +2,7 @@
 
 import { Dispatch, SetStateAction } from 'react';
 import { COO_CODES, COO_LABELS } from '@/lib/constants';
-import type { FormLine, ProductOption, VariantOption } from '@/components/purchase-order-form';
+import type { FormLine, ProductOption, VariantOption } from '@/components/po-form.types';
 import { CurrencyOptions } from '@/components/currency-options';
 
 // Helper functions to extract values from events
@@ -105,15 +105,23 @@ export function ItemGrids({
     setActiveCooPopoverRowId(null);
   };
 
+  // const uploadCSV = () => {
+
+  // }
   return (
     <s-section>
       <s-stack direction="block" gap="base">
         <s-stack direction="inline" alignItems="center" justifyContent="space-between">
           <s-heading>Items Grid</s-heading>
           {!readOnly ? (
-            <s-button type="button" onClick={addLine} variant="secondary">
-              Add line
-            </s-button>
+            <s-stack direction="inline" gap="small">
+              <s-button type="button" onClick={addLine} variant="primary">
+                Add line
+              </s-button>
+              {/* <s-button type="file" variant="secondary" onClick={uploadCSV}>
+                Upload CSV
+              </s-button> */}
+            </s-stack>
           ) : null}
         </s-stack>
 
