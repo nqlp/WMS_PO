@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Dispatch, SetStateAction } from 'react';
 import { COO_CODES, COO_LABELS, CURRENCIES } from '@/lib/constants';
@@ -150,8 +150,7 @@ export function ItemGrids({
                 const cooLabel = (COO_LABELS[code] ?? "").toUpperCase();
                 return !cooQuery || code.includes(cooQuery) || cooLabel.includes(cooQuery);
               });
-              const productPopoverId = `product-popover-${line.rowId}`;
-              const variantPopoverId = `variant-popover-${line.rowId}`;
+
 
               return (
                 <s-table-row key={line.rowId}>
@@ -205,6 +204,11 @@ export function ItemGrids({
                             }));
                             void searchProducts(line.rowId, value);
                           }}
+                          onFocus={() => {
+                            if (currentProductSuggestions.length > 0) {
+                              setActiveProductPopoverRowId(line.rowId);
+                            }
+                          }}
                           onBlur={() => {
                             window.setTimeout(() => {
                               setActiveProductPopoverRowId((prev) => (prev === line.rowId ? null : prev));
@@ -214,42 +218,22 @@ export function ItemGrids({
                       </s-box>
 
                       {!readOnly && !lockBySku && activeProductPopoverRowId === line.rowId && currentProductSuggestions.length > 0 ? (
-                        <s-popover id={productPopoverId} maxBlockSize="240px" inlineSize="360px">
-                          <s-box padding="base">
-                            <s-stack direction="block" gap="small">
-                              <s-heading>Select product</s-heading>
-                              <s-choice-list
-                                values={line.productId ? [line.productId] : []}
-                                onChange={(event: Event) => {
-                                  const [selectedId] = eventValues(event);
-                                  if (!selectedId) {
-                                    return;
-                                  }
-                                  const selected = currentProductSuggestions.find((product) => product.id === selectedId);
-                                  if (selected) {
-                                    selectProduct(line.rowId, selected);
-                                  }
-                                }}
-                                onInput={(event: Event) => {
-                                  const [selectedId] = eventValues(event);
-                                  if (!selectedId) {
-                                    return;
-                                  }
-                                  const selected = currentProductSuggestions.find((product) => product.id === selectedId);
-                                  if (selected) {
-                                    selectProduct(line.rowId, selected);
-                                  }
+                        <div style={{ border: "1px solid #d8dce1", borderRadius: "10px", maxHeight: "150px", overflow: "auto", padding: "0.5rem" }}>
+                          <s-stack direction="block" gap="small">
+                            {currentProductSuggestions.slice(0, 20).map((product) => (
+                              <s-button
+                                key={product.id}
+                                className="title-suggest-btn"
+                                variant="plain"
+                                onClick={() => {
+                                  void selectProduct(line.rowId, product);
                                 }}
                               >
-                                {currentProductSuggestions.slice(0, 20).map((product) => (
-                                  <s-choice key={product.id} value={product.id}>
-                                    {`${product.title} (${product.vendor})`}
-                                  </s-choice>
-                                ))}
-                              </s-choice-list>
-                            </s-stack>
-                          </s-box>
-                        </s-popover>
+                                {`${product.title} (${product.vendor})`}
+                              </s-button>
+                            ))}
+                          </s-stack>
+                        </div>
                       ) : null}
                     </s-stack>
                   </s-table-cell>
@@ -258,7 +242,7 @@ export function ItemGrids({
                     <s-stack direction="block" gap="small">
                       <s-box className="title-control-wrap">
                         <s-text-field
-                          className={readOnly || lockBySku ? 'title-field-disabled' : undefined}
+                          className={readOnly || lockBySku ? "title-field-disabled" : undefined}
                           value={line.variantTitle}
                           disabled={readOnly || lockBySku}
                           onInput={(event: Event) => {
@@ -270,6 +254,11 @@ export function ItemGrids({
                             }));
                             setActiveVariantPopoverRowId(value.trim() ? line.rowId : null);
                           }}
+                          onFocus={() => {
+                            if (variantSuggestions.length > 0) {
+                              setActiveVariantPopoverRowId(line.rowId);
+                            }
+                          }}
                           onBlur={() => {
                             window.setTimeout(() => {
                               setActiveVariantPopoverRowId((prev) => (prev === line.rowId ? null : prev));
@@ -278,63 +267,21 @@ export function ItemGrids({
                         />
                       </s-box>
 
-                      {!readOnly && !lockBySku ? (
-                        <>
-                          <s-button
-                            className="title-suggest-btn"
-                            type="button"
-                            variant="tertiary"
-                            icon="search"
-                            commandFor={variantPopoverId}
-                            disabled={variantSuggestions.length === 0}
-                            onClick={() => {
-                              if (variantSuggestions.length > 0) {
-                                setActiveVariantPopoverRowId(line.rowId);
-                              }
-                            }}
-                          >
-                            Variant suggestions
-                          </s-button>
-
-                          {activeVariantPopoverRowId === line.rowId && variantSuggestions.length > 0 ? (
-                            <s-popover id={variantPopoverId} maxBlockSize="240px" inlineSize="360px">
-                              <s-box padding="base">
-                                <s-stack direction="block" gap="small">
-                                  <s-heading>Select variant</s-heading>
-                                  <s-choice-list
-                                    values={line.variantId ? [line.variantId] : []}
-                                    onChange={(event: Event) => {
-                                      const [selectedId] = eventValues(event);
-                                      if (!selectedId) {
-                                        return;
-                                      }
-                                      const selected = variantSuggestions.find((variant) => variant.id === selectedId);
-                                      if (selected) {
-                                        selectVariant(line.rowId, selected);
-                                      }
-                                    }}
-                                    onInput={(event: Event) => {
-                                      const [selectedId] = eventValues(event);
-                                      if (!selectedId) {
-                                        return;
-                                      }
-                                      const selected = variantSuggestions.find((variant) => variant.id === selectedId);
-                                      if (selected) {
-                                        selectVariant(line.rowId, selected);
-                                      }
-                                    }}
-                                  >
-                                    {variantSuggestions.slice(0, 20).map((variant) => (
-                                      <s-choice key={variant.id} value={variant.id}>
-                                        {variant.variantTitle}
-                                      </s-choice>
-                                    ))}
-                                  </s-choice-list>
-                                </s-stack>
-                              </s-box>
-                            </s-popover>
-                          ) : null}
-                        </>
+                      {!readOnly && !lockBySku && activeVariantPopoverRowId === line.rowId && variantSuggestions.length > 0 ? (
+                        <div style={{ border: "1px solid #d8dce1", borderRadius: "10px", maxHeight: "150px", overflow: "auto", padding: "0.5rem" }}>
+                          <s-stack direction="block" gap="small">
+                            {variantSuggestions.slice(0, 20).map((variant) => (
+                              <s-button
+                                key={variant.id}
+                                className="title-suggest-btn"
+                                variant="plain"
+                                onClick={() => selectVariant(line.rowId, variant)}
+                              >
+                                {variant.variantTitle}
+                              </s-button>
+                            ))}
+                          </s-stack>
+                        </div>
                       ) : null}
                     </s-stack>
                   </s-table-cell>
