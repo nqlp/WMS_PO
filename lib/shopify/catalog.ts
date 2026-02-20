@@ -56,6 +56,22 @@ interface ProductVariantsResponse {
   } | null;
 }
 
+interface VariantSearchResponse {
+  productVariants: {
+    nodes: Array<{
+      id: string;
+      title: string;
+      sku: string | null;
+      inventoryItem: {
+        countryCodeOfOrigin: string | null;
+        harmonizedSystemCode: string | null;
+      } | null;
+      product: { id: string; title: string };
+      selectedOptions: Array<{ name: string; value: string }>;
+    }>;
+  };
+}
+
 interface SkuValidationResponse {
   productVariants: {
     nodes: Array<{
@@ -221,6 +237,51 @@ export async function searchProducts(session: AuthenticatedSession, rawQuery: st
       coo: variant.inventoryItem?.countryCodeOfOrigin?.trim() || null,
       hsCode: normalizeHsCode(variant.inventoryItem?.harmonizedSystemCode)
     }))
+  }));
+}
+
+export interface ShopifyVariantSearchResult extends ShopifyVariantLite {
+  productId: string;
+  productTitle: string;
+}
+
+export async function searchVariantsByTitle(session: AuthenticatedSession, rawQuery: string): Promise<ShopifyVariantSearchResult[]> {
+  const query = rawQuery.trim();
+  if (!query) {
+    return [];
+  }
+
+  const data = await runShopifyGraphql<VariantSearchResponse>(
+    session,
+    `#graphql
+    query SearchVariantsByTitle($query: String!) {
+      productVariants(first: 20, query: $query) {
+        nodes {
+          id
+          title
+          sku
+          inventoryItem {
+            countryCodeOfOrigin
+            harmonizedSystemCode
+          }
+          product { id title }
+          selectedOptions { name value }
+        }
+      }
+    }
+    `,
+    { query: `title:*${query}*` }
+  );
+
+  return data.productVariants.nodes.map((variant) => ({
+    id: variant.id,
+    sku: variant.sku,
+    title: variant.title,
+    variantTitle: toVariantTitle(variant.selectedOptions, variant.title),
+    coo: variant.inventoryItem?.countryCodeOfOrigin?.trim() || null,
+    hsCode: normalizeHsCode(variant.inventoryItem?.harmonizedSystemCode),
+    productId: variant.product.id,
+    productTitle: variant.product.title,
   }));
 }
 

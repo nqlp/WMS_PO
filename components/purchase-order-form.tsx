@@ -50,6 +50,8 @@ export interface VariantOption {
   variantTitle: string;
   coo: string | null;
   hsCode: string | null;
+  productId?: string;
+  productTitle?: string;
 }
 
 export interface FormLine {
@@ -175,6 +177,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
 
   const [productSuggestions, setProductSuggestions] = useState<Record<string, ProductOption[]>>({});
   const [variantPool, setVariantPool] = useState<Record<string, VariantOption[]>>({});
+  const [variantSearchResults, setVariantSearchResults] = useState<Record<string, VariantOption[]>>({});
   const [activeProductPopoverRowId, setActiveProductPopoverRowId] = useState<string | null>(null);
   const [activeVariantPopoverRowId, setActiveVariantPopoverRowId] = useState<string | null>(null);
   const [activeCooPopoverRowId, setActiveCooPopoverRowId] = useState<string | null>(null);
@@ -219,6 +222,11 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       return next;
     });
     setVariantPool((prev) => {
+      const next = { ...prev };
+      delete next[rowId];
+      return next;
+    });
+    setVariantSearchResults((prev) => {
       const next = { ...prev };
       delete next[rowId];
       return next;
@@ -348,6 +356,25 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
     }
   }
 
+  async function searchVariants(rowId: string, query: string) {
+    if (query.trim().length < 2) {
+      setVariantSearchResults((prev) => ({ ...prev, [rowId]: [] }));
+      setActiveVariantPopoverRowId((prev) => (prev === rowId ? null : prev));
+      return;
+    }
+
+    try {
+      const payload = await apiFetch<{ variants: VariantOption[] }>(
+        `/api/shopify/variants/search?q=${encodeURIComponent(query)}`
+      );
+      setVariantSearchResults((prev) => ({ ...prev, [rowId]: payload.variants }));
+      setActiveVariantPopoverRowId(rowId);
+    } catch {
+      setVariantSearchResults((prev) => ({ ...prev, [rowId]: [] }));
+      setActiveVariantPopoverRowId((prev) => (prev === rowId ? null : prev));
+    }
+  }
+
   async function selectProduct(rowId: string, product: ProductOption) {
     updateLine(rowId, (line) => ({
       ...line,
@@ -382,8 +409,11 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       coo: variant.coo ?? "",
       cooLocked: Boolean(variant.coo),
       hsCode: normalizeHsCode(variant.hsCode) ?? "",
-      skuError: null
+      skuError: null,
+      ...(variant.productId && !line.productId ? { productId: variant.productId } : {}),
+      ...(variant.productTitle && !line.productTitle ? { productTitle: variant.productTitle } : {})
     }));
+    setVariantSearchResults((prev) => ({ ...prev, [rowId]: [] }));
     setActiveVariantPopoverRowId((prev) => (prev === rowId ? null : prev));
   }
 
@@ -670,6 +700,8 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         searchProducts={searchProducts}
         selectProduct={selectProduct}
         selectVariant={selectVariant}
+        searchVariants={searchVariants}
+        variantSearchResults={variantSearchResults}
         setActiveProductPopoverRowId={setActiveProductPopoverRowId}
         setActiveVariantPopoverRowId={setActiveVariantPopoverRowId}
         activeCooPopoverRowId={activeCooPopoverRowId}

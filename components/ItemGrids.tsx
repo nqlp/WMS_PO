@@ -67,6 +67,8 @@ interface ItemGridsProps {
   searchProducts: (rowId: string, query: string) => Promise<void>;
   selectProduct: (rowId: string, product: ProductOption) => Promise<void>;
   selectVariant: (rowId: string, variant: VariantOption) => void;
+  searchVariants: (rowId: string, query: string) => Promise<void>;
+  variantSearchResults: Record<string, VariantOption[]>;
   setActiveProductPopoverRowId: Dispatch<SetStateAction<string | null>>;
   setActiveVariantPopoverRowId: Dispatch<SetStateAction<string | null>>;
   activeCooPopoverRowId: string | null;
@@ -88,6 +90,8 @@ export function ItemGrids({
   searchProducts,
   selectProduct,
   selectVariant,
+  searchVariants,
+  variantSearchResults,
   setActiveProductPopoverRowId,
   setActiveVariantPopoverRowId,
   activeCooPopoverRowId,
@@ -131,9 +135,12 @@ export function ItemGrids({
               const lockBySku = immutableBySku.has(line.rowId);
               const variants = variantPool[line.rowId] ?? [];
               const currentProductSuggestions = productSuggestions[line.rowId] ?? [];
-              const variantSuggestions = variants.filter((variant) =>
+              const variantPoolVariants = variants.filter((variant) =>
                 variant.variantTitle.toUpperCase().includes(line.variantTitle.toUpperCase())
               );
+              const variantSuggestions = line.productId
+                ? variantPoolVariants
+                : (variantSearchResults[line.rowId] ?? []);
 
               const cooQuery = line.coo.trim().toUpperCase();
               const hasExactCooMatch =
@@ -253,6 +260,9 @@ export function ItemGrids({
                               variantTitle: value,
                               variantId: null
                             }));
+                            if (!line.productId && value.trim().length >= 2) {
+                              void searchVariants(line.rowId, value);
+                            }
                             setActiveVariantPopoverRowId(value.trim() ? line.rowId : null);
                           }}
                           onFocus={() => {
