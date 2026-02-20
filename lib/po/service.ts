@@ -1,5 +1,5 @@
 import type { PoHeader, PoItem, Prisma } from '@prisma/client';
-
+import { verifyProductTitlesExist } from '../shopify/catalog';
 import type { AuthenticatedSession } from '@/lib/auth/session-token';
 import { DEFAULT_CURRENCY } from '@/lib/constants';
 import { ApiError } from '@/lib/http';
@@ -93,6 +93,12 @@ export async function createPurchaseOrder(session: AuthenticatedSession, input: 
   const now = new Date();
   const createdBy = actor(session);
 
+  const productTitles = input.items.map((line) => line.productTitle);
+  const { invalidTitles } = await verifyProductTitlesExist(session, productTitles);
+
+  if (invalidTitles.length > 0) {
+    throw new ApiError(422, `The following product titles do not exist in the catalog: ${invalidTitles.join(', ')}`);
+  }
   const result = await prisma.$transaction(async (tx) => {
     const header = await tx.poHeader.create({
       data: {
@@ -275,6 +281,13 @@ export async function updatePurchaseOrder(
 ) {
   const now = new Date();
   const modifiedBy = actor(session);
+
+  const productTitles = input.items.map((line) => line.productTitle);
+  const { invalidTitles } = await verifyProductTitlesExist(session, productTitles);
+
+  if (invalidTitles.length > 0) {
+    throw new ApiError(422, `The following product titles do not exist in the catalog: ${invalidTitles.join(', ')}`);
+  }
 
   const result = await prisma.$transaction(async (tx) => {
     const existing = await tx.poHeader.findFirst({

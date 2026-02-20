@@ -113,6 +113,39 @@ export interface SkuValidationMatch {
   coo: string | null;
 }
 
+export async function verifyProductTitlesExist(session: AuthenticatedSession, titles: string[]): Promise<{ validTitles: string[]; invalidTitles: string[] }> {
+  const uniqueTitles = [... new Set(titles.map(title => title.trim()).filter(Boolean))];
+  if (uniqueTitles.length === 0) {
+    return { validTitles: [], invalidTitles: [] };
+  }
+  const validTitles: string[] = [];
+  const invalidTitles: string[] = [];
+
+  for (const title of uniqueTitles) {
+    const data = await runShopifyGraphql<ProductSearchResponse>(
+      session,
+      `#graphql
+      query VerifyProductTitle($query: String!) {
+        products(first: 20, query: $query) {
+          nodes {
+            title
+          }
+        }
+      }
+      `,
+      { query: `title:"${title}"` }
+    );
+
+    const foundProduct = data.products.nodes.some((product) => product.title.toLowerCase() === title.toLowerCase());
+    if (foundProduct) {
+      validTitles.push(title);
+    } else {
+      invalidTitles.push(title);
+    }
+  }
+  return { validTitles, invalidTitles };
+}
+
 function toVariantTitle(selectedOptions: Array<{ name: string; value: string }>, fallback: string): string {
   const values = selectedOptions.map((option) => option.value).filter(Boolean);
   if (values.length === 0) {

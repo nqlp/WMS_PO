@@ -417,7 +417,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
     setActiveVariantPopoverRowId((prev) => (prev === rowId ? null : prev));
   }
 
-  function validateBeforeSubmit(): boolean {
+  async function validateBeforeSubmit(): Promise<boolean> {
     setSubmitError(null);
     setHeaderError(null);
 
@@ -481,6 +481,30 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       }
     }
 
+    const titlesToCheck = [...new Set(lines.map((line) => line.productTitle.trim()).filter(Boolean))];
+    for (const title of titlesToCheck) {
+      try {
+        const payload = await apiFetch<{ products: ProductOption[] }>(
+          `/api/shopify/products/search?q=${encodeURIComponent(title)}`
+        );
+        const exactMatch = payload.products.some(
+          (p) => p.title.toLowerCase() === title.toLowerCase()
+        );
+        if (!exactMatch) {
+          const lineIndex = lines.findIndex(
+            (line) => line.productTitle.trim().toLowerCase() === title.toLowerCase()
+          );
+          setSubmitError(
+            `Line ${lineIndex + 1}: Product "${title}" does not exist in Shopify`
+          );
+          return false;
+        }
+      } catch {
+        setSubmitError(`Unable to verify product "${title}" in Shopify`);
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -494,7 +518,8 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       return;
     }
 
-    if (!validateBeforeSubmit()) {
+    const isValid = await validateBeforeSubmit();
+    if (!isValid) {
       return;
     }
 
