@@ -602,6 +602,7 @@ export function PurchaseOrderListPage() {
         <s-table>
           <s-table-header-row>
             <s-table-header> PO Number </s-table-header>
+            <s-table-header> Vendor </s-table-header>
             <s-table-header> Item# </s-table-header>
             <s-table-header> Pieces </s-table-header>
             <s-table-header> Status </s-table-header>
@@ -617,6 +618,7 @@ export function PurchaseOrderListPage() {
             {rows.map((row) => (
               <s-table-row key={row.poNumber}>
                 <s-table-cell>{row.poNumber}</s-table-cell>
+                <s-table-cell>{row.vendor}</s-table-cell>
                 <s-table-cell>{row.itemCount}</s-table-cell>
                 <s-table-cell>{row.pieces}</s-table-cell>
                 <s-table-cell>
