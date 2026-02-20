@@ -357,7 +357,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
   }
 
   async function searchVariants(rowId: string, query: string) {
-    if (query.trim().length < 2) {
+    if (query.trim().length < 1) {
       setVariantSearchResults((prev) => ({ ...prev, [rowId]: [] }));
       setActiveVariantPopoverRowId((prev) => (prev === rowId ? null : prev));
       return;

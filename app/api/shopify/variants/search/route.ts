@@ -10,8 +10,8 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const query = url.searchParams.get("q") ?? "";
 
-    if (query.trim().length < 2) {
-      throw new ApiError(400, "Query must be at least 2 characters");
+    if (query.trim().length < 1) {
+      throw new ApiError(400, 'Query must be at least 1 character');
     }
 
     const variants = await searchVariantsByTitle(session, query);

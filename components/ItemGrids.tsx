@@ -260,7 +260,7 @@ export function ItemGrids({
                               variantTitle: value,
                               variantId: null
                             }));
-                            if (!line.productId && value.trim().length >= 2) {
+                            if (!line.productId && value.trim().length >= 1) {
                               void searchVariants(line.rowId, value);
                             }
                             setActiveVariantPopoverRowId(value.trim() ? line.rowId : null);
