@@ -61,7 +61,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
   );
 
   const [productSuggestions, setProductSuggestions] = useState<Record<string, ProductOption[]>>({});
-  const [variantPool, setVariantPool] = useState<Record<string, VariantOption[]>>({});
+  const [variantSuggestions, setVariantSuggestions] = useState<Record<string, VariantOption[]>>({});
   const [variantSearchResults, setVariantSearchResults] = useState<Record<string, VariantOption[]>>({});
   const [activeProductPopoverRowId, setActiveProductPopoverRowId] = useState<string | null>(null);
   const [activeVariantPopoverRowId, setActiveVariantPopoverRowId] = useState<string | null>(null);
@@ -106,7 +106,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       delete next[rowId];
       return next;
     });
-    setVariantPool((prev) => {
+    setVariantSuggestions((prev) => {
       const next = { ...prev };
       delete next[rowId];
       return next;
@@ -203,7 +203,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       }));
 
       setProductSuggestions((prev) => ({ ...prev, [rowId]: [] }));
-      setVariantPool((prev) => ({ ...prev, [rowId]: [] }));
+      setVariantSuggestions((prev) => ({ ...prev, [rowId]: [] }));
       setActiveProductPopoverRowId((prev) => (prev === rowId ? null : prev));
       setActiveVariantPopoverRowId((prev) => (prev === rowId ? null : prev));
       setActiveCooPopoverRowId((prev) => (prev === rowId ? null : prev));
@@ -279,9 +279,9 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
       const payload = await apiFetch<{ variants: VariantOption[] }>(
         `/api/shopify/products/${encodeURIComponent(product.id)}/variants`
       );
-      setVariantPool((prev) => ({ ...prev, [rowId]: payload.variants }));
+      setVariantSuggestions((prev) => ({ ...prev, [rowId]: payload.variants }));
     } catch {
-      setVariantPool((prev) => ({ ...prev, [rowId]: product.variants ?? [] }));
+      setVariantSuggestions((prev) => ({ ...prev, [rowId]: product.variants ?? [] }));
     }
   }
 
@@ -599,7 +599,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         readOnly={readOnly}
         lines={lines}
         immutableBySku={immutableBySku}
-        variantPool={variantPool}
+        variantSuggestions={variantSuggestions}
         productSuggestions={productSuggestions}
         activeProductPopoverRowId={activeProductPopoverRowId}
         activeVariantPopoverRowId={activeVariantPopoverRowId}

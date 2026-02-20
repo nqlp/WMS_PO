@@ -10,7 +10,7 @@ interface ItemGridsProps {
   readOnly: boolean;
   lines: FormLine[];
   immutableBySku: Set<string>;
-  variantPool: Record<string, VariantOption[]>;
+  variantSuggestions: Record<string, VariantOption[]>;
   productSuggestions: Record<string, ProductOption[]>;
   activeProductPopoverRowId: string | null;
   activeVariantPopoverRowId: string | null;
@@ -33,7 +33,7 @@ export function ItemGrids({
   readOnly,
   lines,
   immutableBySku,
-  variantPool,
+  variantSuggestions,
   productSuggestions,
   activeProductPopoverRowId,
   activeVariantPopoverRowId,
@@ -95,12 +95,12 @@ export function ItemGrids({
           <s-table-body>
             {lines.map((line, index) => {
               const lockBySku = immutableBySku.has(line.rowId);
-              const variants = variantPool[line.rowId] ?? [];
+              const variants = variantSuggestions[line.rowId] ?? [];
               const currentProductSuggestions = productSuggestions[line.rowId] ?? [];
               const variantPoolVariants = variants.filter((variant) =>
                 variant.variantTitle.toUpperCase().includes(line.variantTitle.toUpperCase())
               );
-              const variantSuggestions = line.productId
+              const filteredVariantSuggestions = line.productId
                 ? variantPoolVariants
                 : (variantSearchResults[line.rowId] ?? []);
 
@@ -228,7 +228,7 @@ export function ItemGrids({
                             setActiveVariantPopoverRowId(value.trim() ? line.rowId : null);
                           }}
                           onFocus={() => {
-                            if (variantSuggestions.length > 0) {
+                            if (filteredVariantSuggestions.length > 0) {
                               setActiveVariantPopoverRowId(line.rowId);
                             }
                           }}
@@ -240,10 +240,10 @@ export function ItemGrids({
                         />
                       </s-box>
 
-                      {!readOnly && !lockBySku && activeVariantPopoverRowId === line.rowId && variantSuggestions.length > 0 ? (
+                      {!readOnly && !lockBySku && activeVariantPopoverRowId === line.rowId && filteredVariantSuggestions.length > 0 ? (
                         <div style={{ border: "1px solid #d8dce1", borderRadius: "10px", maxHeight: "150px", overflow: "auto", padding: "0.5rem" }}>
                           <s-stack direction="block" gap="small">
-                            {variantSuggestions.slice(0, 20).map((variant) => (
+                            {filteredVariantSuggestions.slice(0, 20).map((variant) => (
                               <s-button
                                 key={variant.id}
                                 className="title-suggest-btn"
