@@ -191,7 +191,7 @@ export function ItemGrids({
                     <s-stack direction="block" gap="small">
                       <s-box className="title-control-wrap">
                         <s-text-field
-                          className={readOnly || lockBySku ? "title-field-disabled" : undefined}
+                          className={readOnly || lockBySku ? "product-title-field title-field-disabled" : "product-title-field"}
                           value={line.productTitle}
                           disabled={readOnly || lockBySku}
                           onInput={(event: Event) => {
@@ -243,7 +243,7 @@ export function ItemGrids({
                     <s-stack direction="block" gap="small">
                       <s-box className="title-control-wrap">
                         <s-text-field
-                          className={readOnly || lockBySku ? "title-field-disabled" : undefined}
+                          className={readOnly || lockBySku ? "variant-title-field title-field-disabled" : "variant-title-field"}
                           value={line.variantTitle}
                           disabled={readOnly || lockBySku}
                           onInput={(event: Event) => {

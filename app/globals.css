@@ -147,7 +147,6 @@ s-table-cell.title-col-cell {
   min-width: 0 !important;
 }
 
-s-table-header.currency-col-header,
 s-table-cell.currency-col-cell {
   width: 5rem;
   text-align: center;
@@ -162,13 +161,24 @@ s-select.currency-field {
 s-box.title-control-wrap {
   display: inline-block;
   width: 100%;
-  min-width: 100%;
+  min-width: 0;
 }
 
 s-box.title-control-wrap s-text-field {
-  display: inline-block !important;
-  width: 100% !important;
-  min-width: 100% !important;
+  display: inline-block;
+  width: 100%;
+  min-width: 0;
+}
+
+s-text-field.product-title-field {
+  width: 10rem !important;
+  min-width: 10rem !important;
+}
+
+s-text-field.variant-title-field {
+  width: 100%;
+  max-width: 15rem;
+  min-width: 0;
 }
 
 s-button.title-suggest-btn {
