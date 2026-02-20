@@ -10,6 +10,7 @@ import { useEmbeddedBootstrap, useVendors } from '@/lib/client/hooks';
 import { ItemGrids } from '@/components/ItemGrids';
 import { CurrencyOptions } from '@/components/currency-options';
 import { normalizeHsCode } from '@/lib/helper';
+import { lineId, emptyLine, decimalText, eventValue } from '@/components/po-form.utils';
 import type {
   FormLine,
   ProductOption,
@@ -17,62 +18,6 @@ import type {
   PurchaseOrderFormProps,
   VariantOption,
 } from '@/components/po-form.types';
-
-function lineId(): string {
-  return Math.random().toString(36).slice(2, 12);
-}
-
-function emptyLine(): FormLine {
-  return {
-    rowId: lineId(),
-    sku: "",
-    productId: null,
-    productTitle: "",
-    variantId: null,
-    variantTitle: "",
-    orderQty: "1",
-    unitCost: "",
-    unitCostCurrency: DEFAULT_CURRENCY,
-    hsCode: "",
-    coo: "",
-    cooLocked: false,
-    skuError: null
-  };
-}
-
-function decimalText(value: string | number | null): string {
-  if (value == null) {
-    return "";
-  }
-
-  if (typeof value === "number") {
-    return value.toFixed(2);
-  }
-
-  return value;
-}
-
-function eventValue(event: unknown): string {
-  const currentValue = (event as { currentTarget?: { value?: unknown } }).currentTarget?.value;
-  if (typeof currentValue === "string") {
-    return currentValue;
-  }
-
-  if (typeof currentValue === "number") {
-    return String(currentValue);
-  }
-
-  const targetValue = (event as { target?: { value?: unknown } }).target?.value;
-  if (typeof targetValue === "string") {
-    return targetValue;
-  }
-
-  if (typeof targetValue === "number") {
-    return String(targetValue);
-  }
-
-  return "";
-}
 
 export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }: PurchaseOrderFormProps) {
   const router = useRouter();
