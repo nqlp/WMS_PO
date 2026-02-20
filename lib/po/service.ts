@@ -12,7 +12,7 @@ import type {
 } from '@/lib/validation/po';
 
 type PoHeaderWithItems = PoHeader & { items: PoItem[] };
-type SortBy = NonNullable<PurchaseOrderListFilters['sortBy']>;
+type SortBy = NonNullable<PurchaseOrderListFilters["sortBy"]>;
 
 function parseDate(value: string | null | undefined, options: { endOfDay?: boolean } = {}): Date | null {
   if (!value) {
@@ -78,7 +78,7 @@ function toItemCreateInput(
     sku: parseNullableText(line.sku),
     orderQty: line.orderQty,
     receivedQty,
-    status: carryForward?.status ?? 'OPEN',
+    status: carryForward?.status ?? "OPEN",
     unitCost: line.unitCost ?? null,
     unitCostCurrency: line.unitCostCurrency ?? DEFAULT_CURRENCY,
     hsCode: parseNullableText(line.hsCode),
@@ -103,7 +103,7 @@ export async function createPurchaseOrder(session: AuthenticatedSession, input: 
     const header = await tx.poHeader.create({
       data: {
         vendor: input.header.vendor,
-        status: 'OPEN',
+        status: "OPEN",
         creationUser: createdBy,
         createdAt: now,
         importDuties: input.header.importDuties,
@@ -136,12 +136,12 @@ export async function createPurchaseOrder(session: AuthenticatedSession, input: 
 
 function applyDateRange(
   where: Prisma.PoHeaderWhereInput,
-  field: 'expectedDate' | 'createdAt',
+  field: "expectedDate" | "createdAt",
   startValue?: string,
   endValue?: string
 ) {
   const start = parseDate(startValue);
-  const end = parseDate(endValue, { endOfDay: field === 'createdAt' });
+  const end = parseDate(endValue, { endOfDay: field === "createdAt" });
 
   if (!start && !end) {
     return;
@@ -169,7 +169,7 @@ function applyFilters(session: AuthenticatedSession, filters: PurchaseOrderListF
   if (filters.vendor) {
     where.vendor = {
       equals: filters.vendor,
-      mode: 'insensitive'
+      mode: "insensitive"
     };
   }
 
@@ -177,7 +177,7 @@ function applyFilters(session: AuthenticatedSession, filters: PurchaseOrderListF
     where.poNumber = filters.poNumber;
   }
 
-  if (typeof filters.importDuties === 'boolean') {
+  if (typeof filters.importDuties === "boolean") {
     where.importDuties = filters.importDuties;
   }
 
@@ -185,32 +185,32 @@ function applyFilters(session: AuthenticatedSession, filters: PurchaseOrderListF
     where.importType = filters.importType;
   }
 
-  if (typeof filters.hasNotes === 'boolean') {
+  if (typeof filters.hasNotes === "boolean") {
     if (filters.hasNotes) {
-      where.AND = [{ notes: { not: null } }, { notes: { not: '' } }];
+      where.AND = [{ notes: { not: null } }, { notes: { not: "" } }];
     } else {
-      where.OR = [{ notes: null }, { notes: '' }];
+      where.OR = [{ notes: null }, { notes: "" }];
     }
   }
 
-  applyDateRange(where, 'expectedDate', filters.expectedDateStart, filters.expectedDateEnd);
-  applyDateRange(where, 'createdAt', filters.createdAtStart, filters.createdAtEnd);
+  applyDateRange(where, "expectedDate", filters.expectedDateStart, filters.expectedDateEnd);
+  applyDateRange(where, "createdAt", filters.createdAtStart, filters.createdAtEnd);
 
   return where;
 }
 
 const SORT_COLUMN_MAP: Record<SortBy, keyof Prisma.PoHeaderOrderByWithRelationInput> = {
-  poNumber: 'poNumber',
-  createdAt: 'createdAt',
-  expectedDate: 'expectedDate',
-  status: 'status',
-  vendor: 'vendor'
+  poNumber: "poNumber",
+  createdAt: "createdAt",
+  expectedDate: "expectedDate",
+  status: "status",
+  vendor: "vendor"
 };
 
 export async function listPurchaseOrders(session: AuthenticatedSession, filters: PurchaseOrderListFilters) {
   const where = applyFilters(session, filters);
-  const sortBy: SortBy = filters.sortBy ?? 'createdAt';
-  const sortDirection: Prisma.SortOrder = filters.sortDirection ?? 'desc';
+  const sortBy: SortBy = filters.sortBy ?? "createdAt";
+  const sortDirection: Prisma.SortOrder = filters.sortDirection ?? "desc";
 
   const headers = await prisma.poHeader.findMany({
     where,
@@ -261,14 +261,14 @@ export async function getPurchaseOrder(session: AuthenticatedSession, poNumber: 
     include: {
       items: {
         orderBy: {
-          poItem: 'asc'
+          poItem: "asc"
         }
       }
     }
   });
 
   if (!header) {
-    throw new ApiError(404, 'Purchase order not found');
+    throw new ApiError(404, "Purchase order not found");
   }
 
   return serializePurchaseOrder(header);
@@ -286,7 +286,7 @@ export async function updatePurchaseOrder(
   const { invalidTitles } = await verifyProductTitlesExist(session, productTitles);
 
   if (invalidTitles.length > 0) {
-    throw new ApiError(422, `The following product titles do not exist in the catalog: ${invalidTitles.join(', ')}`);
+    throw new ApiError(422, `The following product titles do not exist in the catalog: ${invalidTitles.join(", ")}`);
   }
 
   const result = await prisma.$transaction(async (tx) => {
@@ -305,11 +305,11 @@ export async function updatePurchaseOrder(
     });
 
     if (!existing) {
-      throw new ApiError(404, 'Purchase order not found');
+      throw new ApiError(404, "Purchase order not found");
     }
 
-    if (existing.status === 'ARCHIVED') {
-      throw new ApiError(409, 'Archived purchase orders are read-only');
+    if (existing.status === "ARCHIVED") {
+      throw new ApiError(409, "Archived purchase orders are read-only");
     }
 
     const existingItems = new Map(existing.items.map((item) => [item.poItem, item]));
@@ -352,7 +352,7 @@ export async function updatePurchaseOrder(
       include: {
         items: {
           orderBy: {
-            poItem: 'asc'
+            poItem: "asc"
           }
         }
       }
@@ -360,7 +360,7 @@ export async function updatePurchaseOrder(
   });
 
   if (!result) {
-    throw new ApiError(500, 'Failed to update purchase order');
+    throw new ApiError(500, "Failed to update purchase order");
   }
 
   return serializePurchaseOrder(result);
@@ -380,17 +380,17 @@ export async function checkInPurchaseOrder(session: AuthenticatedSession, poNumb
     });
 
     if (!header) {
-      throw new ApiError(404, 'Purchase order not found');
+      throw new ApiError(404, "Purchase order not found");
     }
 
-    if (header.status !== 'OPEN') {
-      throw new ApiError(409, 'Check-in is only allowed for OPEN purchase orders');
+    if (header.status !== "OPEN") {
+      throw new ApiError(409, "Check-in is only allowed for OPEN purchase orders");
     }
 
     return tx.poHeader.update({
       where: { poNumber },
       data: {
-        status: 'CHECKEDIN'
+        status: "CHECKEDIN"
       }
     });
   });
