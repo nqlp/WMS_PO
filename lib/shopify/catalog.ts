@@ -113,7 +113,9 @@ export interface SkuValidationMatch {
   coo: string | null;
 }
 
-export async function verifyProductTitlesExist(session: AuthenticatedSession, titles: string[]): Promise<{ validTitles: string[]; invalidTitles: string[] }> {
+export async function verifyProductTitlesExist(
+  session: AuthenticatedSession,
+  titles: string[]): Promise<{ validTitles: string[]; invalidTitles: string[] }> {
   const uniqueTitles = [... new Set(titles.map(title => title.trim()).filter(Boolean))];
   if (uniqueTitles.length === 0) {
     return { validTitles: [], invalidTitles: [] };
