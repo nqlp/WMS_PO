@@ -1,0 +1,122 @@
+"use client";
+
+import { IMPORT_TYPES } from '@/lib/constants';
+import { CurrencyOptions } from '@/components/currency-options';
+import { eventValue } from '@/components/po-form.utils';
+
+interface PurchaseOrderHeaderProps {
+    readOnly: boolean;
+    header: {
+        vendor: string;
+        setVendor: (v: string) => void;
+        importDuties: boolean;
+        setImportDuties: (v: boolean) => void;
+        importType: string;
+        setImportType: (v: string) => void;
+        expectedDate: string;
+        setExpectedDate: (v: string) => void;
+        shippingFees: string;
+        setShippingFees: (v: string) => void;
+        shippingFeesCurrency: string;
+        setShippingFeesCurrency: (v: string) => void;
+        notes: string;
+        setNotes: (v: string) => void;
+    };
+    vendors: {
+        allVendorOptions: string[];
+        loading: boolean;
+    };
+}
+
+export function PurchaseOrderHeader({ readOnly, header, vendors }: PurchaseOrderHeaderProps) {
+    return (
+        <s-query-container>
+            <s-grid
+                gap="base"
+                gridTemplateColumns="repeat(auto-fit, minmax(240px, 1fr))"
+            >
+                <s-grid-item>
+                    <s-select label="Vendor" value={header.vendor} disabled={readOnly} onChange={(event: Event) => header.setVendor(eventValue(event))}>
+                        <s-option value="">
+                            {vendors.loading ? "Loading vendors..." : "Select Vendor"}
+                        </s-option>
+                        {vendors.allVendorOptions.map((option) => (
+                            <s-option key={option} value={option}>
+                                {option}
+                            </s-option>
+                        ))}
+                    </s-select>
+                </s-grid-item>
+
+                <s-grid-item>
+                    <s-select
+                        label="Import Duties"
+                        value={header.importDuties ? "true" : "false"}
+                        disabled={readOnly}
+                        onChange={(event: Event) => header.setImportDuties(eventValue(event) === "true")}
+                    >
+                        <s-option value="false">No</s-option>
+                        <s-option value="true">Yes</s-option>
+                    </s-select>
+                </s-grid-item>
+
+                <s-grid-item>
+                    <s-select
+                        label="Import Type"
+                        value={header.importType}
+                        disabled={readOnly}
+                        onChange={(event: Event) => header.setImportType(eventValue(event))}
+                    >
+                        {IMPORT_TYPES.map((option) => (
+                            <s-option key={option} value={option}>
+                                {option}
+                            </s-option>
+                        ))}
+                    </s-select>
+                </s-grid-item>
+
+                <s-grid-item>
+                    <s-date-field
+                        type="single"
+                        label="Expected On"
+                        value={header.expectedDate}
+                        disabled={readOnly}
+                        style={{ inlineSize: "100%" }}
+                        onChange={(event: Event) => header.setExpectedDate(eventValue(event))}
+                    />
+                </s-grid-item>
+
+                <s-grid-item>
+                    <s-number-field
+                        label="Shipping Fees"
+                        value={header.shippingFees}
+                        min="0"
+                        step="0.01"
+                        disabled={readOnly}
+                        onInput={(event: Event) => header.setShippingFees(eventValue(event))}
+                    />
+                </s-grid-item>
+
+                <s-grid-item>
+                    <s-select
+                        label="Shipping Fees Currency"
+                        value={header.shippingFeesCurrency}
+                        disabled={readOnly}
+                        onChange={(event: Event) => header.setShippingFeesCurrency(eventValue(event))}
+                    >
+                        <CurrencyOptions />
+                    </s-select>
+                </s-grid-item>
+
+                <s-grid-item>
+                    <s-text-area
+                        label="Notes"
+                        value={header.notes}
+                        disabled={readOnly}
+                        onInput={(event: Event) => header.setNotes(eventValue(event))}
+                    />
+                </s-grid-item>
+            </s-grid>
+        </s-query-container>
+    );
+}

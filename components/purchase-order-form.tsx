@@ -1,9 +1,7 @@
 "use client";
 
-import { IMPORT_TYPES } from '@/lib/constants';
 import { ItemGrids } from '@/components/ItemGrids';
-import { CurrencyOptions } from '@/components/currency-options';
-import { eventValue } from '@/components/po-form.utils';
+import { PurchaseOrderHeader } from '@/components/PurchaseOrderHeader';
 import type { PurchaseOrderFormProps } from '@/components/po-form.types';
 import { usePurchaseOrderForm } from '@/components/usePurchaseOrderForm';
 
@@ -46,94 +44,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
           ) : null}
           {form.successMessage ? <s-banner tone="success">{form.successMessage}</s-banner> : null}
 
-          <s-query-container>
-            <s-grid
-              gap="base"
-              gridTemplateColumns="repeat(auto-fit, minmax(240px, 1fr))"
-            >
-              <s-grid-item>
-                <s-select label="Vendor" value={form.header.vendor} disabled={readOnly} onChange={(event: Event) => form.header.setVendor(eventValue(event))}>
-                  <s-option value="">
-                    {form.vendors.loading ? "Loading vendors..." : "Select Vendor"}
-                  </s-option>
-                  {form.vendors.allVendorOptions.map((option) => (
-                    <s-option key={option} value={option}>
-                      {option}
-                    </s-option>
-                  ))}
-                </s-select>
-              </s-grid-item>
-
-              <s-grid-item>
-                <s-select
-                  label="Import Duties"
-                  value={form.header.importDuties ? "true" : "false"}
-                  disabled={readOnly}
-                  onChange={(event: Event) => form.header.setImportDuties(eventValue(event) === "true")}
-                >
-                  <s-option value="false">No</s-option>
-                  <s-option value="true">Yes</s-option>
-                </s-select>
-              </s-grid-item>
-
-              <s-grid-item>
-                <s-select
-                  label="Import Type"
-                  value={form.header.importType}
-                  disabled={readOnly}
-                  onChange={(event: Event) => form.header.setImportType(eventValue(event))}
-                >
-                  {IMPORT_TYPES.map((option) => (
-                    <s-option key={option} value={option}>
-                      {option}
-                    </s-option>
-                  ))}
-                </s-select>
-              </s-grid-item>
-
-              <s-grid-item>
-                <s-date-field
-                  type="single"
-                  label="Expected On"
-                  value={form.header.expectedDate}
-                  disabled={readOnly}
-                  style={{ inlineSize: "100%" }}
-                  onChange={(event: Event) => form.header.setExpectedDate(eventValue(event))}
-                />
-              </s-grid-item>
-
-              <s-grid-item>
-                <s-number-field
-                  label="Shipping Fees"
-                  value={form.header.shippingFees}
-                  min="0"
-                  step="0.01"
-                  disabled={readOnly}
-                  onInput={(event: Event) => form.header.setShippingFees(eventValue(event))}
-                />
-              </s-grid-item>
-
-              <s-grid-item>
-                <s-select
-                  label="Shipping Fees Currency"
-                  value={form.header.shippingFeesCurrency}
-                  disabled={readOnly}
-                  onChange={(event: Event) => form.header.setShippingFeesCurrency(eventValue(event))}
-                >
-                  <CurrencyOptions />
-                </s-select>
-              </s-grid-item>
-
-              <s-grid-item>
-                <s-text-area
-                  label="Notes"
-                  value={form.header.notes}
-                  disabled={readOnly}
-                  onInput={(event: Event) => form.header.setNotes(eventValue(event))}
-                />
-              </s-grid-item>
-            </s-grid>
-          </s-query-container>
+          <PurchaseOrderHeader readOnly={readOnly} header={form.header} vendors={form.vendors} />
         </s-stack>
       </s-section>
       <ItemGrids
