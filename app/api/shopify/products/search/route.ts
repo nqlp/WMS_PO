@@ -8,10 +8,10 @@ export async function GET(request: Request) {
   try {
     const session = await requireShopifySession(request, { csrf: false });
     const url = new URL(request.url);
-    const query = url.searchParams.get('q') ?? '';
+    const query = url.searchParams.get("q") ?? "";
 
     if (query.trim().length < 2) {
-      throw new ApiError(400, 'Query must be at least 2 characters');
+      throw new ApiError(400, "Query must be at least 2 characters");
     }
 
     const products = await searchProducts(session, query);
