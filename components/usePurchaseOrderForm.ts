@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useReducer } from 'react';
+import { type SetStateAction, useCallback, useEffect, useMemo, useReducer } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
 import { COO_CODES, DEFAULT_CURRENCY } from '@/lib/constants';
@@ -773,14 +773,20 @@ export function usePurchaseOrderForm({
 
         // Popovers
         activeProductPopoverRowId: state.activeProductPopoverRowId,
-        setActiveProductPopoverRowId: (rowId: string | null) =>
-            dispatch({ type: "SET_ACTIVE_PRODUCT_POPOVER", rowId }),
+        setActiveProductPopoverRowId: (action: SetStateAction<string | null>) => {
+            const rowId = typeof action === "function" ? action(state.activeProductPopoverRowId) : action;
+            dispatch({ type: "SET_ACTIVE_PRODUCT_POPOVER", rowId });
+        },
         activeVariantPopoverRowId: state.activeVariantPopoverRowId,
-        setActiveVariantPopoverRowId: (rowId: string | null) =>
-            dispatch({ type: "SET_ACTIVE_VARIANT_POPOVER", rowId }),
+        setActiveVariantPopoverRowId: (action: SetStateAction<string | null>) => {
+            const rowId = typeof action === "function" ? action(state.activeVariantPopoverRowId) : action;
+            dispatch({ type: "SET_ACTIVE_VARIANT_POPOVER", rowId });
+        },
         activeCooPopoverRowId: state.activeCooPopoverRowId,
-        setActiveCooPopoverRowId: (rowId: string | null) =>
-            dispatch({ type: "SET_ACTIVE_COO_POPOVER", rowId }),
+        setActiveCooPopoverRowId: (action: SetStateAction<string | null>) => {
+            const rowId = typeof action === "function" ? action(state.activeCooPopoverRowId) : action;
+            dispatch({ type: "SET_ACTIVE_COO_POPOVER", rowId });
+        },
 
         // Validation
         validateSkuForLine,

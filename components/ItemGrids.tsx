@@ -6,14 +6,24 @@ import type { FormLine, ProductOption, VariantOption } from '@/components/po-for
 import { eventValue, eventValues } from '@/components/po-form.utils';
 import { CurrencyOptions } from '@/components/currency-options';
 
-interface ItemGridsProps {
-  readOnly: boolean;
+export interface ItemGridsData {
   lines: FormLine[];
   immutableBySku: Set<string>;
   variantSuggestions: Record<string, VariantOption[]>;
   productSuggestions: Record<string, ProductOption[]>;
+  variantSearchResults: Record<string, VariantOption[]>;
+}
+
+export interface ItemGridsPopovers {
   activeProductPopoverRowId: string | null;
+  setActiveProductPopoverRowId: Dispatch<SetStateAction<string | null>>;
   activeVariantPopoverRowId: string | null;
+  setActiveVariantPopoverRowId: Dispatch<SetStateAction<string | null>>;
+  activeCooPopoverRowId: string | null;
+  setActiveCooPopoverRowId: Dispatch<SetStateAction<string | null>>;
+}
+
+export interface ItemGridsActions {
   addLine: () => void;
   removeLine: (rowId: string) => void;
   updateLine: (rowId: string, updater: (line: FormLine) => FormLine) => void;
@@ -22,35 +32,28 @@ interface ItemGridsProps {
   selectProduct: (rowId: string, product: ProductOption) => Promise<void>;
   selectVariant: (rowId: string, variant: VariantOption) => void;
   searchVariants: (rowId: string, query: string) => Promise<void>;
-  variantSearchResults: Record<string, VariantOption[]>;
-  setActiveProductPopoverRowId: Dispatch<SetStateAction<string | null>>;
-  setActiveVariantPopoverRowId: Dispatch<SetStateAction<string | null>>;
-  activeCooPopoverRowId: string | null;
-  setActiveCooPopoverRowId: Dispatch<SetStateAction<string | null>>;
 }
 
-export function ItemGrids({
-  readOnly,
-  lines,
-  immutableBySku,
-  variantSuggestions,
-  productSuggestions,
-  activeProductPopoverRowId,
-  activeVariantPopoverRowId,
-  addLine,
-  removeLine,
-  updateLine,
-  validateSkuForLine,
-  searchProducts,
-  selectProduct,
-  selectVariant,
-  searchVariants,
-  variantSearchResults,
-  setActiveProductPopoverRowId,
-  setActiveVariantPopoverRowId,
-  activeCooPopoverRowId,
-  setActiveCooPopoverRowId
-}: ItemGridsProps) {
+interface ItemGridsProps {
+  readOnly: boolean;
+  data: ItemGridsData;
+  popovers: ItemGridsPopovers;
+  actions: ItemGridsActions;
+}
+
+export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps) {
+  const {
+    lines, immutableBySku, variantSuggestions, productSuggestions, variantSearchResults,
+  } = data;
+  const {
+    activeProductPopoverRowId, setActiveProductPopoverRowId,
+    activeVariantPopoverRowId, setActiveVariantPopoverRowId,
+    activeCooPopoverRowId, setActiveCooPopoverRowId,
+  } = popovers;
+  const {
+    addLine, removeLine, updateLine, validateSkuForLine,
+    searchProducts, selectProduct, selectVariant, searchVariants,
+  } = actions;
 
   const handleCooInput = (rowId: string, event: Event) => {
     const [selectedCode] = eventValues(event);
