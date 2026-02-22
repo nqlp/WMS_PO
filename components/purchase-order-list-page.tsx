@@ -36,6 +36,11 @@ const EMPTY_FILTERS: FiltersState = {
   poNumber: ""
 };
 
+function getDatePickerValue(event: Event): string {
+  const source = (event.target ?? event.currentTarget) as { value?: unknown } | null;
+  return typeof source?.value === "string" ? source.value : "";
+}
+
 function toQueryParams(filters: FiltersState, sortBy: SortBy, sortDirection: SortDirection): string {
   const params = new URLSearchParams();
 
@@ -349,65 +354,55 @@ export function PurchaseOrderListPage() {
               </s-grid-item>
 
               <s-grid-item>
-                <s-text-field
+                <s-date-field
+                  type="single"
                   label="Expected Date Start"
-                  className="field"
-                  type="date"
                   value={filters.expectedDateStart}
-                  onChange={(event: Event) => setFilters((prev) => ({ ...prev, expectedDateStart: (event.target as HTMLInputElement).value }))}
-                >
-                  <s-clickable slot="accessory" commandFor="expected-date-start-popover">
-                    <s-icon type="calendar" />
-                  </s-clickable>
-                </s-text-field>
-                <s-popover id="expected-date-start-popover" inlineSize="320px">
-                  <s-box padding="base">
-                    <s-date-picker
-                      type="single"
-                      name="expected-date-start-picker"
-                      value={filters.expectedDateStart}
-                      onChange={(event: Event) =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          expectedDateStart: (event.currentTarget as HTMLElement & { value: string }).value
-                        }))
-                      }
-                    />
-                  </s-box>
-                </s-popover>
+                  style={{ inlineSize: "100%" }}
+                  onChange={(event: Event) => {
+                    const nextValue = getDatePickerValue(event);
+                    setFilters((prev) => ({
+                      ...prev,
+                      expectedDateStart: nextValue
+                    }));
+                  }}
+                />
               </s-grid-item>
-
               <s-grid-item>
-                <s-text-field
+                <s-date-field
                   label="Expected Date End"
                   className="field"
                   type="date"
                   value={filters.expectedDateEnd}
-                  onChange={(event: Event) => setFilters((prev) => ({ ...prev, expectedDateEnd: (event.target as HTMLInputElement).value }))}
+                  onChange={(event: Event) => {
+                    const nextValue = getDatePickerValue(event);
+                    setFilters((prev) => ({
+                      ...prev,
+                      expectedDateEnd: nextValue
+                    }));
+                  }}
                 >
-                  <s-clickable slot="accessory" commandFor="expected-date-end-popover">
-                    <s-icon type="calendar" />
-                  </s-clickable>
-                </s-text-field>
+                </s-date-field>
                 <s-popover id="expected-date-end-popover" inlineSize="320px">
                   <s-box padding="base">
                     <s-date-picker
                       type="single"
                       name="expected-date-end-picker"
                       value={filters.expectedDateEnd}
-                      onChange={(event: Event) =>
+                      onChange={(event: Event) => {
+                        const nextValue = getDatePickerValue(event);
                         setFilters((prev) => ({
                           ...prev,
-                          expectedDateEnd: (event.currentTarget as HTMLElement & { value: string }).value
-                        }))
-                      }
+                          expectedDateEnd: nextValue
+                        }));
+                      }}
                     />
                   </s-box>
                 </s-popover>
               </s-grid-item>
 
               <s-grid-item>
-                <s-text-field
+                <s-date-field
                   label="Created At Start"
                   className="field"
                   type="date"
@@ -416,54 +411,24 @@ export function PurchaseOrderListPage() {
                     setFilters((prev) => ({ ...prev, createdAtStart: (event.target as HTMLInputElement).value }))
                   }
                 >
-                  <s-clickable slot="accessory" commandFor="created-at-start-popover">
-                    <s-icon type="calendar" />
-                  </s-clickable>
-                </s-text-field>
-                <s-popover id="created-at-start-popover" inlineSize="320px">
-                  <s-box padding="base">
-                    <s-date-picker
-                      type="single"
-                      name="created-at-start-picker"
-                      value={filters.createdAtStart}
-                      onChange={(event: Event) =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          createdAtStart: (event.currentTarget as HTMLElement & { value: string }).value
-                        }))
-                      }
-                    />
-                  </s-box>
-                </s-popover>
+                </s-date-field>
               </s-grid-item>
 
               <s-grid-item>
-                <s-text-field
+                <s-date-field
                   label="Created At End"
                   className="field"
                   type="date"
                   value={filters.createdAtEnd}
-                  onChange={(event: Event) => setFilters((prev) => ({ ...prev, createdAtEnd: (event.target as HTMLInputElement).value }))}
+                  onChange={(event: Event) => {
+                    const nextValue = getDatePickerValue(event);
+                    setFilters((prev) => ({
+                      ...prev,
+                      createdAtEnd: nextValue
+                    }));
+                  }}
                 >
-                  <s-clickable slot="accessory" commandFor="created-at-end-popover">
-                    <s-icon type="calendar" />
-                  </s-clickable>
-                </s-text-field>
-                <s-popover id="created-at-end-popover" inlineSize="320px">
-                  <s-box padding="base">
-                    <s-date-picker
-                      type="single"
-                      name="created-at-end-picker"
-                      value={filters.createdAtEnd}
-                      onChange={(event: Event) =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          createdAtEnd: (event.currentTarget as HTMLElement & { value: string }).value
-                        }))
-                      }
-                    />
-                  </s-box>
-                </s-popover>
+                </s-date-field>
               </s-grid-item>
 
               <s-grid-item>
