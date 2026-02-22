@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 
-import { AppNav } from '@/components/app-nav';
+import { AppNav } from '@/components/AppNav';
 import { env } from '@/lib/env';
 
 import './globals.css';

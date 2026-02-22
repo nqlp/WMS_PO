@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { PurchaseOrderForm } from '@/components/purchase-order-form';
+import { PurchaseOrderForm } from '@/components/PurchaseOrderForm';
 import type { PurchaseOrderDto } from '@/components/po-form.types';
 import { apiFetch } from '@/lib/client/api';
 import { useEmbeddedBootstrap } from '@/lib/client/hooks';

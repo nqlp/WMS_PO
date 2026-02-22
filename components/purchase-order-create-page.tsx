@@ -1,6 +1,6 @@
 'use client';
 
-import { PurchaseOrderForm } from '@/components/purchase-order-form';
+import { PurchaseOrderForm } from '@/components/PurchaseOrderForm';
 
 export function PurchaseOrderCreatePage() {
   return <PurchaseOrderForm mode="create" title="Purchase Order Creation" />;

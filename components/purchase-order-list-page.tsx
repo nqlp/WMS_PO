@@ -6,23 +6,9 @@ import { apiFetch } from '@/lib/client/api';
 import { withEmbeddedParams } from '@/lib/client/embedded-url';
 import { useEmbeddedBootstrap } from '@/lib/client/hooks';
 import { IMPORT_TYPES, PO_HEADER_STATUS } from '@/lib/constants';
-
+import { PurchaseOrderTable, PurchaseOrderTableRow } from '@/components/PurchaseOrderTable';
 type SortBy = "poNumber" | "createdAt" | "expectedDate" | "status" | "vendor";
 type SortDirection = "asc" | "desc";
-
-interface PurchaseOrderListRow {
-  poNumber: string;
-  itemCount: number;
-  pieces: number;
-  status: string;
-  createdAt: string;
-  lastModification: string | null;
-  expectedDate: string | null;
-  importDuties: boolean;
-  importType: string;
-  notes: string | null;
-  vendor: string;
-}
 
 interface FiltersState {
   status: string;
@@ -69,36 +55,6 @@ function toQueryParams(filters: FiltersState, sortBy: SortBy, sortDirection: Sor
   return params.toString();
 }
 
-function statusClass(status: string): string {
-  switch (status) {
-    case "OPEN":
-      return "status-pill status-open";
-    case "CHECKEDIN":
-    case "PART_RECEIVED":
-    case "RECEIVED":
-      return "status-pill status-checkedin";
-    case "CLOSED":
-    case "ARCHIVED":
-      return "status-pill status-closed";
-    default:
-      return "status-pill status-error";
-  }
-}
-
-function formatDate(value: string | null): string {
-  if (!value) {
-    return "";
-  }
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return value;
-  }
-
-  return parsed.toLocaleString();
-}
-
-
 export function PurchaseOrderListPage() {
   const router = useRouter();
   const bootstrap = useEmbeddedBootstrap();
@@ -106,7 +62,7 @@ export function PurchaseOrderListPage() {
   const [filters, setFilters] = useState<FiltersState>(EMPTY_FILTERS);
   const [sortBy, setSortBy] = useState<SortBy>("createdAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
-  const [rows, setRows] = useState<PurchaseOrderListRow[]>([]);
+  const [rows, setRows] = useState<PurchaseOrderTableRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [inlineErrors, setInlineErrors] = useState<Record<string, string>>({});
@@ -121,7 +77,7 @@ export function PurchaseOrderListPage() {
       setLoading(true);
       setError(null);
       const query = toQueryParams(nextFilters, nextSortBy, nextSortDirection);
-      const response = await apiFetch<{ purchaseOrders: PurchaseOrderListRow[] }>(`/api/purchase-orders?${query}`);
+      const response = await apiFetch<{ purchaseOrders: PurchaseOrderTableRow[] }>(`/api/purchase-orders?${query}`);
       setRows(response.purchaseOrders);
     } catch (error) {
       console.error("Failed to load purchase orders", error);
@@ -160,7 +116,7 @@ export function PurchaseOrderListPage() {
           setSortDirection(forcedSortDirection);
           setCreateSuccessMessage(`Purchase order ${createdPoNumber} created successfully`);
           const forcedQuery = toQueryParams(forcedFilters, forcedSortBy, forcedSortDirection);
-          const forcedResponse = await apiFetch<{ purchaseOrders: PurchaseOrderListRow[] }>(
+          const forcedResponse = await apiFetch<{ purchaseOrders: PurchaseOrderTableRow[] }>(
             `/api/purchase-orders?${forcedQuery}`
           );
           setRows(forcedResponse.purchaseOrders);
@@ -202,7 +158,7 @@ export function PurchaseOrderListPage() {
         setSortDirection(nextSortDirection);
 
         const query = toQueryParams(mergedFilters, nextSortBy, nextSortDirection);
-        const response = await apiFetch<{ purchaseOrders: PurchaseOrderListRow[] }>(
+        const response = await apiFetch<{ purchaseOrders: PurchaseOrderTableRow[] }>(
           `/api/purchase-orders?${query}`
         );
         setRows(response.purchaseOrders);
@@ -598,67 +554,11 @@ export function PurchaseOrderListPage() {
         </s-section-header>
       </s-section>
 
-      <s-section>
-        <s-table>
-          <s-table-header-row>
-            <s-table-header> PO Number </s-table-header>
-            <s-table-header> Vendor </s-table-header>
-            <s-table-header> Item# </s-table-header>
-            <s-table-header> Pieces </s-table-header>
-            <s-table-header> Status </s-table-header>
-            <s-table-header> Creation date </s-table-header>
-            <s-table-header> Last modification date </s-table-header>
-            <s-table-header> Expected date </s-table-header>
-            <s-table-header> Import duties </s-table-header>
-            <s-table-header> Import Type </s-table-header>
-            <s-table-header> Notes </s-table-header>
-            <s-table-header> Actions </s-table-header>
-          </s-table-header-row>
-          <s-table-body>
-            {rows.map((row) => (
-              <s-table-row key={row.poNumber}>
-                <s-table-cell>{row.poNumber}</s-table-cell>
-                <s-table-cell>{row.vendor}</s-table-cell>
-                <s-table-cell>{row.itemCount}</s-table-cell>
-                <s-table-cell>{row.pieces}</s-table-cell>
-                <s-table-cell>
-                  <span className={statusClass(row.status)}>{row.status}</span>
-                </s-table-cell>
-                <s-table-cell>{formatDate(row.createdAt)}</s-table-cell>
-                <s-table-cell>{formatDate(row.lastModification)}</s-table-cell>
-                <s-table-cell>{formatDate(row.expectedDate)}</s-table-cell>
-                <s-table-cell>{row.importDuties ? "Yes" : "No"}</s-table-cell>
-                <s-table-cell>{row.importType}</s-table-cell>
-                <s-table-cell>{row.notes ? "X" : ""}</s-table-cell>
-                <s-table-cell>
-                  <s-stack direction="inline" gap="small">
-                    <s-button
-                      variant="secondary"
-                      onClick={() => {
-                        void runCheckIn(row.poNumber, row.status);
-                      }}
-                    >
-                      Check-in
-                    </s-button>
-
-                    <s-button
-                      variant="primary"
-                      onClick={() => {
-                        router.push(withEmbeddedParams(`/purchase-orders/${row.poNumber}/edit`, searchParams));
-                      }}
-                    >
-                      Modify
-                    </s-button>
-                  </s-stack>
-                  {inlineErrors[row.poNumber] ? (
-                    <div className="error-text">{inlineErrors[row.poNumber]}</div>
-                  ) : null}
-                </s-table-cell>
-              </s-table-row>
-            ))}
-          </s-table-body>
-        </s-table>
-      </s-section>
+      <PurchaseOrderTable
+        rows={rows}
+        inlineErrors={inlineErrors}
+        onCheckIn={(row) => void runCheckIn(row.poNumber, row.status)}
+        onModify={(row) => router.push(withEmbeddedParams(`/purchase-orders/${row.poNumber}/edit`, searchParams))} />
     </s-page>
   );
 }

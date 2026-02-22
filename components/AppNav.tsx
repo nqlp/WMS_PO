@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-
 import { withEmbeddedParams } from "@/lib/client/embedded-url";
 
 export function AppNav() {

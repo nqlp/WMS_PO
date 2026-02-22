@@ -28,6 +28,21 @@ export const IMPORT_TYPES = [
   "BROKERAGE_TRANSPORT_ALL"
 ] as const;
 
+export const PO_TABLE_HEADERS = [
+  "PO Number",
+  "Vendor",
+  "Item#",
+  "Pieces",
+  "Status",
+  "Creation date",
+  "Last modification date",
+  "Expected date",
+  "Import duties",
+  "Import Type",
+  "Notes",
+  "Actions"
+] as const;
+
 export const CURRENCIES = ["CAD", "USD", "EUR", "JPY", "NOK", "CNY", "AUD", "SGD"] as const;
 
 export type PoHeaderStatus = (typeof PO_HEADER_STATUS)[number];
@@ -36,7 +51,7 @@ export type ImportType = (typeof IMPORT_TYPES)[number];
 export type Currency = (typeof CURRENCIES)[number];
 export const DEFAULT_CURRENCY: Currency = "CAD";
 
- export const COO_LABELS: Record<string, string> = {
+export const COO_LABELS: Record<string, string> = {
   AC: "Ascension Island",
   AD: "Andorra",
   AE: "United Arab Emirates",
