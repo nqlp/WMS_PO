@@ -367,7 +367,6 @@ export function PurchaseOrderListPage() {
                   type="single"
                   label="Expected Date Start"
                   value={filters.expectedDateStart}
-                  style={{ inlineSize: "100%" }}
                   onChange={(event: Event) => {
                     const nextValue = getControlValue(event);
                     setFilters((prev) => ({
@@ -381,7 +380,7 @@ export function PurchaseOrderListPage() {
                 <s-date-field
                   label="Expected Date End"
                   className="field"
-                  type="date"
+                  type="single"
                   value={filters.expectedDateEnd}
                   onChange={(event: Event) => {
                     const nextValue = getControlValue(event);
@@ -390,44 +389,26 @@ export function PurchaseOrderListPage() {
                       expectedDateEnd: nextValue
                     }));
                   }}
-                >
-                </s-date-field>
-                <s-popover id="expected-date-end-popover" inlineSize="320px">
-                  <s-box padding="base">
-                    <s-date-picker
-                      type="single"
-                      name="expected-date-end-picker"
-                      value={filters.expectedDateEnd}
-                      onChange={(event: Event) => {
-                        const nextValue = getControlValue(event);
-                        setFilters((prev) => ({
-                          ...prev,
-                          expectedDateEnd: nextValue
-                        }));
-                      }}
-                    />
-                  </s-box>
-                </s-popover>
+                />
               </s-grid-item>
 
               <s-grid-item>
                 <s-date-field
                   label="Created At Start"
                   className="field"
-                  type="date"
+                  type="single"
                   value={filters.createdAtStart}
                   onChange={(event: Event) =>
                     setFilters((prev) => ({ ...prev, createdAtStart: getControlValue(event) }))
                   }
-                >
-                </s-date-field>
+                />
               </s-grid-item>
 
               <s-grid-item>
                 <s-date-field
                   label="Created At End"
                   className="field"
-                  type="date"
+                  type="single"
                   value={filters.createdAtEnd}
                   onChange={(event: Event) => {
                     const nextValue = getControlValue(event);
@@ -436,8 +417,7 @@ export function PurchaseOrderListPage() {
                       createdAtEnd: nextValue
                     }));
                   }}
-                >
-                </s-date-field>
+                />
               </s-grid-item>
 
               <s-grid-item>
