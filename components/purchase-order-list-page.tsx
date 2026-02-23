@@ -36,9 +36,14 @@ const EMPTY_FILTERS: FiltersState = {
   poNumber: ""
 };
 
-function getDatePickerValue(event: Event): string {
-  const source = (event.target ?? event.currentTarget) as { value?: unknown } | null;
-  return typeof source?.value === "string" ? source.value : "";
+function getControlValue(event: Event): string {
+  const currentTargetValue = (event.currentTarget as { value?: unknown } | null)?.value;
+  if (typeof currentTargetValue === "string") {
+    return currentTargetValue;
+  }
+
+  const targetValue = (event.target as { value?: unknown } | null)?.value;
+  return typeof targetValue === "string" ? targetValue : "";
 }
 
 function toQueryParams(filters: FiltersState, sortBy: SortBy, sortDirection: SortDirection): string {
@@ -304,7 +309,9 @@ export function PurchaseOrderListPage() {
                 <s-select
                   label="Status"
                   value={filters.status}
-                  onChange={(event: Event) => setFilters((prev) => ({ ...prev, status: (event.target as HTMLSelectElement).value }))}
+                  onChange={(event: Event) =>
+                    setFilters((prev) => ({ ...prev, status: getControlValue(event) }))
+                  }
                 >
                   <s-option value="">All</s-option>
                   {statusOptions}
@@ -315,7 +322,9 @@ export function PurchaseOrderListPage() {
                 <s-select
                   label="Vendor"
                   value={filters.vendor}
-                  onChange={(event: Event) => setFilters((prev) => ({ ...prev, vendor: (event.target as HTMLSelectElement).value }))}
+                  onChange={(event: Event) =>
+                    setFilters((prev) => ({ ...prev, vendor: getControlValue(event) }))
+                  }
                 >
                   <s-option value="">All</s-option>
                   {vendorOptions}
@@ -329,7 +338,7 @@ export function PurchaseOrderListPage() {
                   onChange={(event: Event) =>
                     setFilters((prev) => ({
                       ...prev,
-                      importDuties: (event.target as HTMLSelectElement).value as FiltersState["importDuties"]
+                      importDuties: getControlValue(event) as FiltersState["importDuties"]
                     }))
                   }
                 >
@@ -345,7 +354,7 @@ export function PurchaseOrderListPage() {
                   label="Import Type"
                   value={filters.importType}
                   onChange={(event: Event) =>
-                    setFilters((prev) => ({ ...prev, importType: (event.target as HTMLSelectElement).value }))
+                    setFilters((prev) => ({ ...prev, importType: getControlValue(event) }))
                   }
                 >
                   <s-option value="">All</s-option>
@@ -360,7 +369,7 @@ export function PurchaseOrderListPage() {
                   value={filters.expectedDateStart}
                   style={{ inlineSize: "100%" }}
                   onChange={(event: Event) => {
-                    const nextValue = getDatePickerValue(event);
+                    const nextValue = getControlValue(event);
                     setFilters((prev) => ({
                       ...prev,
                       expectedDateStart: nextValue
@@ -375,7 +384,7 @@ export function PurchaseOrderListPage() {
                   type="date"
                   value={filters.expectedDateEnd}
                   onChange={(event: Event) => {
-                    const nextValue = getDatePickerValue(event);
+                    const nextValue = getControlValue(event);
                     setFilters((prev) => ({
                       ...prev,
                       expectedDateEnd: nextValue
@@ -390,7 +399,7 @@ export function PurchaseOrderListPage() {
                       name="expected-date-end-picker"
                       value={filters.expectedDateEnd}
                       onChange={(event: Event) => {
-                        const nextValue = getDatePickerValue(event);
+                        const nextValue = getControlValue(event);
                         setFilters((prev) => ({
                           ...prev,
                           expectedDateEnd: nextValue
@@ -408,7 +417,7 @@ export function PurchaseOrderListPage() {
                   type="date"
                   value={filters.createdAtStart}
                   onChange={(event: Event) =>
-                    setFilters((prev) => ({ ...prev, createdAtStart: (event.target as HTMLInputElement).value }))
+                    setFilters((prev) => ({ ...prev, createdAtStart: getControlValue(event) }))
                   }
                 >
                 </s-date-field>
@@ -421,7 +430,7 @@ export function PurchaseOrderListPage() {
                   type="date"
                   value={filters.createdAtEnd}
                   onChange={(event: Event) => {
-                    const nextValue = getDatePickerValue(event);
+                    const nextValue = getControlValue(event);
                     setFilters((prev) => ({
                       ...prev,
                       createdAtEnd: nextValue
@@ -438,7 +447,7 @@ export function PurchaseOrderListPage() {
                   onChange={(event: Event) =>
                     setFilters((prev) => ({
                       ...prev,
-                      hasNotes: (event.target as HTMLSelectElement).value as "" | "true" | "false"
+                      hasNotes: getControlValue(event) as "" | "true" | "false"
                     }))
                   }
                 >
@@ -461,7 +470,7 @@ export function PurchaseOrderListPage() {
                 <s-select
                   label="Sort By"
                   value={sortBy}
-                  onChange={(event: Event) => setSortBy((event.target as HTMLSelectElement).value as SortBy)}
+                  onChange={(event: Event) => setSortBy(getControlValue(event) as SortBy)}
                 >
                   {sortByOptions.map((option) => (
                     <s-option key={option.value} value={option.value}>
@@ -476,7 +485,7 @@ export function PurchaseOrderListPage() {
                   label="Sort Direction"
                   value={sortDirection}
                   onChange={(event: Event) =>
-                    setSortDirection((event.target as HTMLSelectElement).value as SortDirection)
+                    setSortDirection(getControlValue(event) as SortDirection)
                   }
                 >
                   {sortDirectionOptions.map((option) => (

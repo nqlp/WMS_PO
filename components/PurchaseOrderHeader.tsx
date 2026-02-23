@@ -1,7 +1,6 @@
 "use client";
 
-import { IMPORT_TYPES } from '@/lib/constants';
-import { CurrencyOptions } from '@/components/currency-options';
+import { CurrencyOptions, ImportTypeOptions, VendorOptions } from '@/components/PurchaseOrderUIOptions';
 import { eventValue } from '@/components/po-form.utils';
 
 interface PurchaseOrderHeaderProps {
@@ -40,11 +39,7 @@ export function PurchaseOrderHeader({ readOnly, header, vendors }: PurchaseOrder
                         <s-option value="">
                             {vendors.loading ? "Loading vendors..." : "Select Vendor"}
                         </s-option>
-                        {vendors.allVendorOptions.map((option) => (
-                            <s-option key={option} value={option}>
-                                {option}
-                            </s-option>
-                        ))}
+                        <VendorOptions vendors={vendors.allVendorOptions} />
                     </s-select>
                 </s-grid-item>
 
@@ -67,11 +62,7 @@ export function PurchaseOrderHeader({ readOnly, header, vendors }: PurchaseOrder
                         disabled={readOnly}
                         onChange={(event: Event) => header.setImportType(eventValue(event))}
                     >
-                        {IMPORT_TYPES.map((option) => (
-                            <s-option key={option} value={option}>
-                                {option}
-                            </s-option>
-                        ))}
+                        <ImportTypeOptions />
                     </s-select>
                 </s-grid-item>
 

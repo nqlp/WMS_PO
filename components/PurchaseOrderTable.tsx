@@ -1,6 +1,6 @@
 "use client";
 
-import { PO_TABLE_HEADERS } from '@/lib/constants';
+import { PoTableHeaders } from '@/components/PurchaseOrderUIOptions';
 
 function statusClass(status: string): string {
     switch (status) {
@@ -57,9 +57,7 @@ export function PurchaseOrderTable({ rows, inlineErrors, onCheckIn, onModify }: 
         <s-section>
             <s-table>
                 <s-table-header-row>
-                    {PO_TABLE_HEADERS.map((header) => (
-                        <s-table-header key={header}>{header}</s-table-header>
-                    ))}
+                    <PoTableHeaders />
                 </s-table-header-row>
                 <s-table-body>
                     {rows.map((row) => (

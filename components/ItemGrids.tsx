@@ -4,7 +4,7 @@ import { Dispatch, SetStateAction } from 'react';
 import { COO_CODES, COO_LABELS } from '@/lib/constants';
 import type { FormLine, ProductOption, VariantOption } from '@/components/po-form.types';
 import { eventValue, eventValues } from '@/components/po-form.utils';
-import { CurrencyOptions } from '@/components/currency-options';
+import { CurrencyOptions } from '@/components/PurchaseOrderUIOptions';
 
 export interface ItemGridsData {
   lines: FormLine[];
