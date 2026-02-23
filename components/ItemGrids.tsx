@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction, useRef } from 'react';
 import { COO_CODES, COO_LABELS } from '@/lib/constants';
 import type { FormLine, ProductOption, VariantOption } from '@/components/po-form.types';
 import { eventValue, eventValues } from '@/components/po-form.utils';
@@ -32,6 +32,7 @@ export interface ItemGridsActions {
   selectProduct: (rowId: string, product: ProductOption) => Promise<void>;
   selectVariant: (rowId: string, variant: VariantOption) => void;
   searchVariants: (rowId: string, query: string) => Promise<void>;
+  importItemsFromFile: (file: File) => Promise<void>;
 }
 
 interface ItemGridsProps {
@@ -62,9 +63,8 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
     setActiveCooPopoverRowId(null);
   };
 
-  // const uploadCSV = () => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // }
   return (
     <s-section>
       <s-stack direction="block" gap="base">
@@ -75,9 +75,22 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
               <s-button type="button" onClick={addLine} variant="primary">
                 Add line
               </s-button>
-              {/* <s-button type="file" variant="secondary" onClick={uploadCSV}>
+              <s-button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()}>
                 Upload CSV
-              </s-button> */}
+              </s-button>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv"
+                hidden
+                onChange={(e) => {
+                  const file = e.currentTarget.files?.[0];
+                  if (!file) return;
+                  void actions.importItemsFromFile(file);
+                  e.currentTarget.value = "";
+                }}
+              />
             </s-stack>
           ) : null}
         </s-stack>
@@ -100,11 +113,11 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
               const lockBySku = immutableBySku.has(line.rowId);
               const variants = variantSuggestions[line.rowId] ?? [];
               const currentProductSuggestions = productSuggestions[line.rowId] ?? [];
-              const variantPoolVariants = variants.filter((variant) =>
+              const matchingProductVariants = variants.filter((variant) =>
                 variant.variantTitle.toUpperCase().includes(line.variantTitle.toUpperCase())
               );
               const filteredVariantSuggestions = line.productId
-                ? variantPoolVariants
+                ? matchingProductVariants
                 : (variantSearchResults[line.rowId] ?? []);
 
               const cooQuery = line.coo.trim().toUpperCase();

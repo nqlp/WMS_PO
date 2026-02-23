@@ -72,7 +72,6 @@ export function PurchaseOrderHeader({ readOnly, header, vendors }: PurchaseOrder
                         label="Expected On"
                         value={header.expectedDate}
                         disabled={readOnly}
-                        style={{ inlineSize: "100%" }}
                         onChange={(event: Event) => header.setExpectedDate(eventValue(event))}
                     />
                 </s-grid-item>

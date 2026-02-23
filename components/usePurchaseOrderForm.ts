@@ -16,6 +16,7 @@ import type {
     PurchaseOrderFormProps,
     VariantOption,
 } from '@/components/po-form.types';
+import { parsePurchaseOrderItemsFile } from '@/lib/po/item-import/parsePurchaseOrderItemsFile';
 
 /* ------------------------------------------------------------------ */
 /*  State                                                              */
@@ -87,7 +88,9 @@ type FormAction =
     | { type: "SET_SUCCESS_MESSAGE"; message: string | null }
     | { type: "SET_SUBMITTING"; value: boolean }
     // Compound: clear row-specific state on remove
-    | { type: "CLEAR_ROW_DATA"; rowId: string };
+    | { type: "CLEAR_ROW_DATA"; rowId: string }
+    // Import items from file
+    | { type: "IMPORT_LINES"; lines: FormLine[] };
 
 /* ------------------------------------------------------------------ */
 /*  Reducer                                                            */
@@ -136,7 +139,9 @@ function formReducer(state: FormState, action: FormAction): FormState {
                 lines: state.lines.filter((line) => line.rowId !== action.rowId),
             };
         }
-
+        case "IMPORT_LINES": {
+            return { ...state, lines: action.lines };
+        }
         // Search / autocomplete
         case "SET_PRODUCT_SUGGESTIONS":
             return {
@@ -731,6 +736,42 @@ export function usePurchaseOrderForm({
         validateBeforeSubmit,
     ]);
 
+    const importItemsFromFile = useCallback(async (file: File) => {
+        dispatch({ type: "SET_HEADER_ERROR", error: null });
+
+        const result = await parsePurchaseOrderItemsFile(file);
+
+        if (!result.success) {
+            const lines = result.errors.map((error) => {
+                const row = error.csvRowNumber ? `Row ${error.csvRowNumber}` : "CSV";
+                const field = error.field ? ` [${error.field}]` : "";
+                return `${row}${field}: ${error.message}`;
+            });
+
+            dispatch({
+                type: "SET_HEADER_ERROR",
+                error: `CSV import failed:\n${lines.join("\n")}`,
+            });
+            return;
+        }
+
+        const importedLines: FormLine[] = result.parsedRows.map((row) => ({
+            rowId: lineId(),
+            sku: row.sku,
+            productId: null,
+            productTitle: row.productTitle,
+            variantId: null,
+            variantTitle: row.variantTitle,
+            orderQty: String(row.orderQty),
+            unitCost: decimalText(row.unitCost),
+            unitCostCurrency: row.unitCostCurrency || DEFAULT_CURRENCY,
+            hsCode: row.hsCode ?? "",
+            coo: row.coo ?? "",
+            cooLocked: false,
+            skuError: null,
+        }));
+        dispatch({ type: "IMPORT_LINES", lines: importedLines });
+    }, []);
 
     return {
         bootstrap,
@@ -761,6 +802,7 @@ export function usePurchaseOrderForm({
         addLine,
         removeLine,
         updateLine,
+        importItemsFromFile,
 
         // Search / autocomplete
         productSuggestions: state.productSuggestions,

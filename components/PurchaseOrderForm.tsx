@@ -40,7 +40,13 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
             </s-banner>
           ) : null}
           {(form.headerError || form.submitError) ? (
-            <s-banner tone="critical">{form.submitError ?? form.headerError}</s-banner>
+            <s-banner tone="critical">
+              <div>
+                {(form.submitError ?? form.headerError)?.split("\n").map((line, i) => (
+                  <div key={i}>{line}</div>
+                ))}
+              </div>
+            </s-banner>
           ) : null}
           {form.successMessage ? <s-banner tone="success">{form.successMessage}</s-banner> : null}
 
@@ -73,6 +79,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
           selectProduct: form.selectProduct,
           selectVariant: form.selectVariant,
           searchVariants: form.searchVariants,
+          importItemsFromFile: form.importItemsFromFile,
         }}
       />
       <s-stack direction="inline" gap="small">
