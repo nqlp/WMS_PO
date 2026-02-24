@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 
-import { PurchaseOrderListPage } from '@/components/purchase-order-list-page';
+import { PurchaseOrderListPage } from '@/components/PurchaseOrderListPage';
 
 export default function PurchaseOrderListRoute() {
   return (

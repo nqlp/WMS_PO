@@ -140,8 +140,38 @@ function formReducer(state: FormState, action: FormAction): FormState {
             };
         }
         case "IMPORT_LINES": {
-            return { ...state, lines: action.lines };
+            const hasSingleLine = state.lines.length === 1;
+            const firstLine = state.lines[0];
+
+            const isPlaceholder =
+                hasSingleLine &&
+                firstLine != null &&
+                !firstLine.sku.trim() &&
+                !firstLine.productTitle.trim() &&
+                !firstLine.variantTitle.trim() &&
+                (firstLine.orderQty.trim() === "" || firstLine.orderQty.trim() === "1") &&
+                !firstLine.unitCost.trim() &&
+                !firstLine.hsCode.trim() &&
+                !firstLine.coo.trim();
+
+            const nextLines = isPlaceholder
+                ? action.lines
+                : [...state.lines, ...action.lines];
+
+            return {
+                ...state,
+                lines: nextLines,
+                productSuggestions: {},
+                variantSuggestions: {},
+                variantSearchResults: {},
+                activeProductPopoverRowId: null,
+                activeVariantPopoverRowId: null,
+                activeCooPopoverRowId: null,
+                validatingSkuRows: new Set(),
+                submitError: null,
+            };
         }
+
         // Search / autocomplete
         case "SET_PRODUCT_SUGGESTIONS":
             return {

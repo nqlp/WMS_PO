@@ -2,14 +2,14 @@ import type { PurchaseOrderImportParseResult } from "./types";
 import { parseCsvPurchaseOrderItems } from "./parseCsvPurchaseOrderItems";
 
 export async function parsePurchaseOrderItemsFile(file: File): Promise<PurchaseOrderImportParseResult> {
-    const lowerName = file.name.toLowerCase();
+    const lowerFileName = file.name.toLowerCase();
 
-    if (lowerName.endsWith(".csv")) {
+    if (lowerFileName.endsWith(".csv")) {
         const content = await file.text();
         return parseCsvPurchaseOrderItems(content);
     }
 
-    if (lowerName.endsWith(".xlsx") || lowerName.endsWith(".xls")) {
+    if (lowerFileName.endsWith(".xlsx") || lowerFileName.endsWith(".xls")) {
         return {
             success: false,
             errors: [
