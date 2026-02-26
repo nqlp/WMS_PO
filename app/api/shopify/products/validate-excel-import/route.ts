@@ -49,7 +49,7 @@ export async function POST(request: Request) {
                 if (!productHandle || !productHandleMapped) {
                     issues.push({
                         rowNumber: row.rowNumber,
-                        field: "product_handle",
+                        field: `${productHandle}`,
                         message: "Product handle required",
                         severity: "error"
                     });
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
                     } catch (error) {
                         issues.push({
                             rowNumber: row.rowNumber,
-                            field: "product_handle",
+                            field: `${productHandle}`,
                             message: "Product handle not found",
                             severity: "error"
                         });
