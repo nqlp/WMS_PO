@@ -95,7 +95,7 @@ export async function POST(request: Request) {
                 if (!Number.isFinite(parsedUnitCost) || parsedUnitCost < 0) {
                     issues.push({
                         rowNumber: row.rowNumber,
-                        field: "unit_cost",
+                        field: `${unitCost}`,
                         message: "Unit cost must be a positive number and numeric",
                         severity: "error"
                     });
