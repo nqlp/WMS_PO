@@ -16,8 +16,8 @@ interface PurchaseOrderHeaderProps {
         setExpectedDate: (v: string) => void;
         shippingFees: string;
         setShippingFees: (v: string) => void;
-        shippingFeesCurrency: string;
-        setShippingFeesCurrency: (v: string) => void;
+        purchaseOrderCurrency: string;
+        setPurchaseOrderCurrency: (v: string) => void;
         notes: string;
         setNotes: (v: string) => void;
     };
@@ -89,10 +89,10 @@ export function PurchaseOrderHeader({ readOnly, header, vendors }: PurchaseOrder
 
                 <s-grid-item>
                     <s-select
-                        label="Shipping Fees Currency"
-                        value={header.shippingFeesCurrency}
+                        label="PO Currency"
+                        value={header.purchaseOrderCurrency}
                         disabled={readOnly}
-                        onChange={(event: Event) => header.setShippingFeesCurrency(eventValue(event))}
+                        onChange={(event: Event) => header.setPurchaseOrderCurrency(eventValue(event))}
                     >
                         <CurrencyOptions />
                     </s-select>

@@ -18,7 +18,7 @@ export interface PurchaseOrderDto {
     importType: string;
     expectedDate: string | null;
     shippingFees: string | number | null;
-    shippingFeesCurrency: string | null;
+    purchaseOrderCurrency: string | null;
     notes: string | null;
     items: PurchaseOrderItemDto[];
 }
@@ -51,10 +51,6 @@ export interface FormLine {
     variantTitle: string;
     orderQty: string;
     unitCost: string;
-    unitCostCurrency: string;
-    hsCode: string;
-    coo: string;
-    cooLocked: boolean;
     skuError: string | null;
 }
 

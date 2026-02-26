@@ -1,6 +1,6 @@
 import {
-  CURRENCIES,
   IMPORT_TYPES,
+  PO_CURRENCIES,
   PO_HEADER_STATUS,
   PO_IMPORT_DUTIES,
   PO_ITEM_STATUS,
@@ -10,7 +10,7 @@ import {
 export function CurrencyOptions() {
   return (
     <>
-      {CURRENCIES.map((currency) => (
+      {PO_CURRENCIES.map((currency) => (
         <s-option key={currency} value={currency}>
           {currency}
         </s-option>

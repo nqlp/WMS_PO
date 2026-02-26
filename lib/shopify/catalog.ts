@@ -18,6 +18,7 @@ interface ProductVendorsResponse {
 interface ProductSearchResponse {
   products: {
     nodes: Array<{
+      handle: string;
       id: string;
       title: string;
       vendor: string;
@@ -35,6 +36,13 @@ interface ProductSearchResponse {
       };
     }>;
   };
+}
+
+interface ProductByHandleResponse {
+  productByHandle: {
+    handle: string;
+    title: string;
+  } | null;
 }
 
 interface ProductVariantsResponse {
@@ -148,6 +156,34 @@ export async function verifyProductTitlesExist(
   return { validTitles, invalidTitles };
 }
 
+export async function validateProductByHandle(
+  session: AuthenticatedSession,
+  handle: string,
+) {
+  const data = await runShopifyGraphql<ProductByHandleResponse>(
+    session,
+    `#graphql
+    query FindProductByHandle($handle: String!) {
+      productByHandle(handle: $handle) {
+        title
+        handle
+      }
+    }
+    `,
+    { handle }
+  );
+
+  const product = data.productByHandle;
+
+  if (!product) {
+    throw new Error(`Product with handle "${handle}" not found`);
+  }
+
+  return {
+    title: product.title,
+    handle: product.handle,
+  };
+}
 function toVariantTitle(selectedOptions: Array<{ name: string; value: string }>, fallback: string): string {
   const values = selectedOptions.map((option) => option.value).filter(Boolean);
   if (values.length === 0) {

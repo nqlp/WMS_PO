@@ -1,4 +1,3 @@
-import { DEFAULT_CURRENCY } from '@/lib/constants';
 import type { FormLine } from '@/components/po-form.types';
 
 export function lineId(): string {
@@ -15,10 +14,6 @@ export function emptyLine(): FormLine {
         variantTitle: "",
         orderQty: "1",
         unitCost: "",
-        unitCostCurrency: DEFAULT_CURRENCY,
-        hsCode: "",
-        coo: "",
-        cooLocked: false,
         skuError: null
     };
 }

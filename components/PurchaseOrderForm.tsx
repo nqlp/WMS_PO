@@ -67,8 +67,6 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
           setActiveProductPopoverRowId: form.setActiveProductPopoverRowId,
           activeVariantPopoverRowId: form.activeVariantPopoverRowId,
           setActiveVariantPopoverRowId: form.setActiveVariantPopoverRowId,
-          activeCooPopoverRowId: form.activeCooPopoverRowId,
-          setActiveCooPopoverRowId: form.setActiveCooPopoverRowId,
         }}
         actions={{
           addLine: form.addLine,
@@ -80,6 +78,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
           selectVariant: form.selectVariant,
           searchVariants: form.searchVariants,
           importItemsFromFile: form.importItemsFromFile,
+          importLines: form.importLines,
         }}
       />
       <s-stack direction="inline" gap="small">

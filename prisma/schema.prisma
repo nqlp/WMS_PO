@@ -17,7 +17,7 @@ model PoHeader {
   importType           String   @default("NO_IMPORT") @map("Import_type") @db.Text
   expectedDate         DateTime? @map("expected_date") @db.Date
   shippingFees         Decimal? @map("shipping_fees") @db.Decimal(12, 2)
-  shippingFeesCurrency String?  @default("CAD") @map("shipping_fees_currency") @db.Char(3)
+  purchaseOrderCurrency String?  @default("CAD") @map("shipping_fees_currency") @db.Char(3)
   notes                String?  @map("Notes") @db.Text
 
   items PoItem[]
@@ -40,9 +40,6 @@ model PoItem {
   receivedQty          Int?      @default(0) @map("received_qty")
   status               String    @default("OPEN") @db.Text
   unitCost             Decimal?  @map("unit_cost") @db.Decimal(12, 2)
-  unitCostCurrency     String    @default("CAD") @map("unit_cost_currency") @db.Char(3)
-  hsCode               String?   @map("hs_code") @db.Text
-  coo                  String?   @db.Char(2)
   lastReceivingDate    DateTime? @map("last_receiving_Date") @db.Timestamptz(6)
   lastModification     DateTime  @map("last_modification") @db.Timestamptz(6)
   lastModificationUser String    @map("last_modification_user") @db.Text
