@@ -117,8 +117,6 @@ export interface SkuValidationMatch {
   productId: string;
   productTitle: string;
   variantTitle: string;
-  hsCode: string | null;
-  coo: string | null;
 }
 
 export async function verifyProductTitlesExist(
