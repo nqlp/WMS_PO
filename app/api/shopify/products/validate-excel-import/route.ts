@@ -89,14 +89,27 @@ export async function POST(request: Request) {
             }
 
             if (unitCost && unitCostMapped) {
-                const parsedUnitCost = Number(unitCost.replace(",", "."));
+                const normalizedUnitCost = unitCost.replace(",", ".").trim();
+
+                const parsedUnitCost = Number(normalizedUnitCost);
                 if (!Number.isFinite(parsedUnitCost) || parsedUnitCost < 0) {
                     issues.push({
                         rowNumber: row.rowNumber,
                         field: "unit_cost",
-                        message: "Unit cost must be a positive number",
+                        message: "Unit cost must be a positive number and numeric",
                         severity: "error"
                     });
+
+                } else {
+                    const decimalPart = normalizedUnitCost.split(".")[1];
+                    if (decimalPart && decimalPart.length > 2) {
+                        issues.push({
+                            rowNumber: row.rowNumber,
+                            field: "unit_cost",
+                            message: "Unit cost must have at most 2 decimal places",
+                            severity: "error"
+                        });
+                    }
                 }
             }
 
