@@ -58,6 +58,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
         data={{
           lines: form.lines,
           immutableBySku: form.immutableBySku,
+          validatingSkuRows: form.validatingSkuRows,
           variantSuggestions: form.variantSuggestions,
           productSuggestions: form.productSuggestions,
           variantSearchResults: form.variantSearchResults,

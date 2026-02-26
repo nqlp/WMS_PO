@@ -772,6 +772,7 @@ export function usePurchaseOrderForm({
         // Lines
         lines: state.lines,
         immutableBySku,
+        validatingSkuRows: state.validatingSkuRows,
         addLine,
         removeLine,
         updateLine,

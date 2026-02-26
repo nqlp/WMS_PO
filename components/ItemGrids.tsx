@@ -10,6 +10,7 @@ import { ExcelImportDialog } from './ExcelImportDialog';
 export interface ItemGridsData {
   lines: FormLine[];
   immutableBySku: Set<string>;
+  validatingSkuRows: Set<string>;
   variantSuggestions: Record<string, VariantOption[]>;
   productSuggestions: Record<string, ProductOption[]>;
   variantSearchResults: Record<string, VariantOption[]>;
@@ -142,6 +143,15 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
                               variantId: value === current.sku ? current.variantId : null,
                               ...(value ? {} : { productId: null, variantId: null })
                             }));
+                          }}
+                          onKeyDown={(event: KeyboardEvent) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+
+                              if (line.sku.trim()) {
+                                void validateSkuForLine(line.rowId);
+                              }
+                            }
                           }}
                           onBlur={() => {
                             if (line.sku.trim()) {
