@@ -39,6 +39,7 @@ export async function POST(request: Request) {
                 resolvedProductTitle = matches?.[0]?.productTitle || "";
                 if (matches.length === 0) {
                     issues.push({
+                        sku: sku,
                         rowNumber: row.rowNumber,
                         field: `${sku}`,
                         message: "SKU not found",
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
                 if (!productHandle || !productHandleMapped) {
                     issues.push({
                         rowNumber: row.rowNumber,
+                        sku: row.sku,
                         field: `${productHandle}`,
                         message: "Product handle required",
                         severity: "error"
@@ -60,6 +62,7 @@ export async function POST(request: Request) {
                     } catch (error) {
                         issues.push({
                             rowNumber: row.rowNumber,
+                            sku: row.sku,
                             field: `${productHandle}`,
                             message: "Product handle not found",
                             severity: "error"
@@ -72,6 +75,7 @@ export async function POST(request: Request) {
             if (!qty || !qtyMapped) {
                 issues.push({
                     rowNumber: row.rowNumber,
+                    sku: row.sku,
                     field: `${qty}`,
                     message: "Quantity required",
                     severity: "error"
@@ -81,6 +85,7 @@ export async function POST(request: Request) {
                 if (!Number.isInteger(qtyNumber) || qtyNumber < 1) {
                     issues.push({
                         rowNumber: row.rowNumber,
+                        sku: row.sku,
                         field: `${qty}`,
                         message: "Quantity must be a positive integer",
                         severity: "error"
@@ -95,6 +100,7 @@ export async function POST(request: Request) {
                 if (!Number.isFinite(parsedUnitCost) || parsedUnitCost < 0) {
                     issues.push({
                         rowNumber: row.rowNumber,
+                        sku: row.sku,
                         field: `${unitCost}`,
                         message: "Unit cost must be a positive number and numeric",
                         severity: "error"
@@ -105,6 +111,7 @@ export async function POST(request: Request) {
                     if (decimalPart && decimalPart.length > 2) {
                         issues.push({
                             rowNumber: row.rowNumber,
+                            sku: row.sku,
                             field: `${unitCost}`,
                             message: "Unit cost must have at most 2 decimal places",
                             severity: "error"

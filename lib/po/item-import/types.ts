@@ -34,6 +34,7 @@ export type CsvColumnMapping = {
 
 export type CsvValidationIssue = {
     rowNumber: number;
+    sku: string;
     field: string;
     message: string;
     severity: "error" | "warning";
