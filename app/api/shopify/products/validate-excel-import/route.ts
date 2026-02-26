@@ -49,7 +49,7 @@ export async function POST(request: Request) {
                     issues.push({
                         sku: sku,
                         rowNumber: row.rowNumber,
-                        field: `${sku}`,
+                        field: "sku",
                         message: "SKU not found",
                         severity: "error"
                     });
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
                     issues.push({
                         rowNumber: row.rowNumber,
                         sku,
-                        field: `${productHandle}`,
+                        field: "product_handle",
                         message: "Product handle required",
                         severity: "error"
                     });
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
                         issues.push({
                             rowNumber: row.rowNumber,
                             sku,
-                            field: `${productHandle}`,
+                            field: "product_handle",
                             message: "Product handle not found",
                             severity: "error"
                         });
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
                 issues.push({
                     rowNumber: row.rowNumber,
                     sku,
-                    field: `${qty}`,
+                    field: "qty",
                     message: "Quantity required",
                     severity: "error"
                 });
@@ -98,7 +98,7 @@ export async function POST(request: Request) {
                     issues.push({
                         rowNumber: row.rowNumber,
                         sku,
-                        field: `${qty}`,
+                        field: "qty",
                         message: "Quantity must be a positive integer",
                         severity: "error"
                     });
@@ -113,7 +113,7 @@ export async function POST(request: Request) {
                     issues.push({
                         rowNumber: row.rowNumber,
                         sku,
-                        field: `${unitCost}`,
+                        field: "unit_cost",
                         message: "Unit cost must be a positive number and numeric",
                         severity: "error"
                     });

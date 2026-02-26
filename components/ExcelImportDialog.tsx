@@ -162,7 +162,7 @@ export function ExcelImportDialog({
                         </s-table-header-row>
                         <s-table-body>
                             {validationResult?.issues.map((issue) => (
-                                <s-table-row key={issue.rowNumber}>
+                                <s-table-row key={`${issue.rowNumber}-${issue.field}`}>
                                     <s-table-cell>{issue.rowNumber}</s-table-cell>
                                     <s-table-cell>{issue.sku}</s-table-cell>
                                     <s-table-cell>{issue.field}</s-table-cell>
