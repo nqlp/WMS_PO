@@ -5,11 +5,13 @@ import { NextResponse } from "next/server";
 
 interface MappedRows {
     rowNumber: number;
-    sku: string;
-    product_handle: string;
-    variant: string;
-    qty: string;
-    unit_cost: string;
+    SKU?: string;
+    sku?: string;
+    product_handle?: string;
+    Variant?: string;
+    variant?: string;
+    qty?: string;
+    unit_cost?: string;
 }
 
 export async function POST(request: Request) {
@@ -23,21 +25,27 @@ export async function POST(request: Request) {
         const rows: MappedRows[] = body.rows;
         const issues: CsvValidationIssue[] = [];
         const validRows: ValidatedCsvRow[] = [];
+        const roundToTwoDecimals = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 
         for (const row of rows) {
+            let resolvedSku = "";
             let resolvedProductTitle = "";
+            let resolvedVariantTitle = "";
+            let resolvedUnitCost: number | null = null;
 
-            const sku = (row.sku ?? "").trim();
+            const sku = (row.SKU ?? row.sku ?? "").trim();
             const productHandle = (row.product_handle ?? "").trim();
-            const variant = (row.variant ?? "").trim();
+            const variant = (row.Variant ?? row.variant ?? "").trim();
             const qty = (row.qty ?? "").trim();
             const unitCost = (row.unit_cost ?? "").trim();
-
+            resolvedVariantTitle = variant;
+            resolvedSku = sku;
 
             if (sku && skuMapped) {
                 const matches = await validateSku(session, sku);
-                resolvedProductTitle = matches?.[0]?.productTitle || "";
-                if (matches.length === 0) {
+                const skuMatch = matches[0];
+
+                if (!skuMatch) {
                     issues.push({
                         sku: sku,
                         rowNumber: row.rowNumber,
@@ -45,12 +53,16 @@ export async function POST(request: Request) {
                         message: "SKU not found",
                         severity: "error"
                     });
+                } else {
+                    resolvedSku = skuMatch.sku;
+                    resolvedProductTitle = skuMatch.productTitle;
+                    resolvedVariantTitle = skuMatch.variantTitle;
                 }
             } else {
                 if (!productHandle || !productHandleMapped) {
                     issues.push({
                         rowNumber: row.rowNumber,
-                        sku: row.sku,
+                        sku,
                         field: `${productHandle}`,
                         message: "Product handle required",
                         severity: "error"
@@ -62,7 +74,7 @@ export async function POST(request: Request) {
                     } catch (error) {
                         issues.push({
                             rowNumber: row.rowNumber,
-                            sku: row.sku,
+                            sku,
                             field: `${productHandle}`,
                             message: "Product handle not found",
                             severity: "error"
@@ -75,7 +87,7 @@ export async function POST(request: Request) {
             if (!qty || !qtyMapped) {
                 issues.push({
                     rowNumber: row.rowNumber,
-                    sku: row.sku,
+                    sku,
                     field: `${qty}`,
                     message: "Quantity required",
                     severity: "error"
@@ -85,7 +97,7 @@ export async function POST(request: Request) {
                 if (!Number.isInteger(qtyNumber) || qtyNumber < 1) {
                     issues.push({
                         rowNumber: row.rowNumber,
-                        sku: row.sku,
+                        sku,
                         field: `${qty}`,
                         message: "Quantity must be a positive integer",
                         severity: "error"
@@ -100,23 +112,14 @@ export async function POST(request: Request) {
                 if (!Number.isFinite(parsedUnitCost) || parsedUnitCost < 0) {
                     issues.push({
                         rowNumber: row.rowNumber,
-                        sku: row.sku,
+                        sku,
                         field: `${unitCost}`,
                         message: "Unit cost must be a positive number and numeric",
                         severity: "error"
                     });
 
                 } else {
-                    const decimalPart = normalizedUnitCost.split(".")[1];
-                    if (decimalPart && decimalPart.length > 2) {
-                        issues.push({
-                            rowNumber: row.rowNumber,
-                            sku: row.sku,
-                            field: `${unitCost}`,
-                            message: "Unit cost must have at most 2 decimal places",
-                            severity: "error"
-                        });
-                    }
+                    resolvedUnitCost = roundToTwoDecimals(parsedUnitCost);
                 }
             }
 
@@ -124,11 +127,11 @@ export async function POST(request: Request) {
             if (!rowHasError) {
                 validRows.push({
                     csvRowNumber: row.rowNumber,
-                    sku: sku,
+                    sku: resolvedSku,
                     productTitle: resolvedProductTitle,
-                    variantTitle: variant,
+                    variantTitle: resolvedVariantTitle,
                     orderQty: Number(qty),
-                    unitCost: unitCost ? Number(unitCost.replace(",", ".")) : null,
+                    unitCost: resolvedUnitCost,
                 });
             }
         }
