@@ -50,7 +50,7 @@ export function ExcelImportDialog({
                 rowNumber: index + 2,
             }));
 
-            const response = await fetch("/api/shopify/products/validate-csv-import", {
+            const response = await fetch("/api/shopify/products/validate-excel-import", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
