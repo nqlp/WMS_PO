@@ -40,7 +40,7 @@ export async function POST(request: Request) {
                 if (matches.length === 0) {
                     issues.push({
                         rowNumber: row.rowNumber,
-                        field: "sku",
+                        field: `${sku}`,
                         message: "SKU not found",
                         severity: "error"
                     });
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
             if (!qty || !qtyMapped) {
                 issues.push({
                     rowNumber: row.rowNumber,
-                    field: "qty",
+                    field: `${qty}`,
                     message: "Quantity required",
                     severity: "error"
                 });
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
                 if (!Number.isInteger(qtyNumber) || qtyNumber < 1) {
                     issues.push({
                         rowNumber: row.rowNumber,
-                        field: "qty",
+                        field: `${qty}`,
                         message: "Quantity must be a positive integer",
                         severity: "error"
                     });
@@ -105,7 +105,7 @@ export async function POST(request: Request) {
                     if (decimalPart && decimalPart.length > 2) {
                         issues.push({
                             rowNumber: row.rowNumber,
-                            field: "unit_cost",
+                            field: `${unitCost}`,
                             message: "Unit cost must have at most 2 decimal places",
                             severity: "error"
                         });
