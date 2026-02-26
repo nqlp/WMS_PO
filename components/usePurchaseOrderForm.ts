@@ -63,7 +63,7 @@ type FormAction =
     | { type: "SET_IMPORT_TYPE"; value: string }
     | { type: "SET_EXPECTED_DATE"; value: string }
     | { type: "SET_SHIPPING_FEES"; value: string }
-    | { type: "SET_SHIPPING_FEES_CURRENCY"; value: string }
+    | { type: "SET_PURCHASE_ORDER_CURRENCY"; value: string }
     | { type: "SET_NOTES"; value: string }
     // Lines
     | { type: "UPDATE_LINE"; rowId: string; updater: (line: FormLine) => FormLine }
@@ -113,7 +113,7 @@ function formReducer(state: FormState, action: FormAction): FormState {
             return { ...state, expectedDate: action.value };
         case "SET_SHIPPING_FEES":
             return { ...state, shippingFees: action.value };
-        case "SET_SHIPPING_FEES_CURRENCY":
+        case "SET_PURCHASE_ORDER_CURRENCY":
             return { ...state, purchaseOrderCurrency: action.value };
         case "SET_NOTES":
             return { ...state, notes: action.value };
@@ -763,8 +763,7 @@ export function usePurchaseOrderForm({
             shippingFees: state.shippingFees,
             setShippingFees: (v: string) => dispatch({ type: "SET_SHIPPING_FEES", value: v }),
             purchaseOrderCurrency: state.purchaseOrderCurrency,
-            setPurchaseOrderCurrency: (v: string) =>
-                dispatch({ type: "SET_SHIPPING_FEES_CURRENCY", value: v }),
+            setPurchaseOrderCurrency: (v: string) => dispatch({ type: "SET_PURCHASE_ORDER_CURRENCY", value: v }),
             notes: state.notes,
             setNotes: (v: string) => dispatch({ type: "SET_NOTES", value: v }),
         },

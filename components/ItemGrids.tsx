@@ -13,6 +13,7 @@ export interface ItemGridsData {
   variantSuggestions: Record<string, VariantOption[]>;
   productSuggestions: Record<string, ProductOption[]>;
   variantSearchResults: Record<string, VariantOption[]>;
+  purchaseOrderCurrency: string;
 }
 
 export interface ItemGridsPopovers {
@@ -45,6 +46,7 @@ interface ItemGridsProps {
 export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps) {
   const {
     lines, immutableBySku, variantSuggestions, productSuggestions, variantSearchResults,
+    purchaseOrderCurrency,
   } = data;
   const {
     activeProductPopoverRowId, setActiveProductPopoverRowId,
@@ -105,6 +107,7 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
               <s-table-header className="title-col-header"><span className="table-header-label">Variant</span></s-table-header>
               <s-table-header className="title-col-header" format="numeric"><span className="table-header-label">Order Qty</span></s-table-header>
               <s-table-header className="title-col-header" format="numeric"><span className="table-header-label">Unit Cost</span></s-table-header>
+              <s-table-header className="title-col-header" format="numeric"><span className="table-header-label">PO Currency</span></s-table-header>
               <s-table-header className="title-col-header"><span className="table-header-label">Actions</span></s-table-header>
             </s-table-header-row>
             <s-table-body>
@@ -274,6 +277,13 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
                         onInput={(event: Event) =>
                           updateLine(line.rowId, (current) => ({ ...current, unitCost: eventValue(event) }))
                         }
+                      />
+                    </s-table-cell>
+
+                    <s-table-cell>
+                      <s-text-field
+                        value={purchaseOrderCurrency}
+                        disabled={true}
                       />
                     </s-table-cell>
 

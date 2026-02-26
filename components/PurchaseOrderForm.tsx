@@ -61,6 +61,7 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
           variantSuggestions: form.variantSuggestions,
           productSuggestions: form.productSuggestions,
           variantSearchResults: form.variantSearchResults,
+          purchaseOrderCurrency: form.header.purchaseOrderCurrency
         }}
         popovers={{
           activeProductPopoverRowId: form.activeProductPopoverRowId,
