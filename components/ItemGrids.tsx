@@ -33,7 +33,6 @@ export interface ItemGridsActions {
   selectProduct: (rowId: string, product: ProductOption) => Promise<void>;
   selectVariant: (rowId: string, variant: VariantOption) => void;
   searchVariants: (rowId: string, query: string) => Promise<void>;
-  importItemsFromFile: (file: File) => Promise<void>;
   importLines: (lines: FormLine[]) => void;
 }
 
@@ -321,7 +320,6 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
             actions.importLines(lines);
             setImportData(null);
           }}
-          onClose={() => setImportData(null)}
         />
       )}
     </>

@@ -43,5 +43,5 @@ export type CsvValidationIssue = {
 export type CsvValidationResult = {
     issues: CsvValidationIssue[];
     hasErrors: boolean;
-    validRows: ValidatedCsvRow[];
+    validRows?: ValidatedCsvRow[];
 }

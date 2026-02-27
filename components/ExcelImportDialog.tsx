@@ -6,13 +6,13 @@ import { eventValue, lineId } from "./po-form.utils";
 import type { CsvColumnMapping, CsvTargetField, CsvValidationResult } from "@/lib/po/item-import/types";
 import { TARGET_FIELDS } from "@/lib/po/item-import/types";
 import { applyColumnMapping } from "@/lib/po/item-import/parseCsvPurchaseOrderItems";
+import { apiFetch } from "@/lib/client/api";
 
 interface ExcelImportDialogProps {
     headers: string[];
     firstDataRow: Record<string, string>;
     allRows: Record<string, string>[];
     onImport: (lines: FormLine[]) => void;
-    onClose: () => void;
 }
 
 export function ExcelImportDialog({
@@ -50,7 +50,7 @@ export function ExcelImportDialog({
                 rowNumber: index + 2,
             }));
 
-            const response = await fetch("/api/shopify/products/validate-excel-import", {
+            const response = await apiFetch<CsvValidationResult>("/api/shopify/products/validate-excel-import", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -64,8 +64,7 @@ export function ExcelImportDialog({
                 })
             })
 
-            const result = await response.json();
-            setValidationResult(result);
+            setValidationResult(response);
             setPhase("report");
         } catch (error) {
             console.error("Validation failed", error);
@@ -126,7 +125,7 @@ export function ExcelImportDialog({
                             disabled={!isQtyMapped}
                             onClick={() => void handleValidate()}
                         >
-                            Save
+                            Confirm
                         </s-button>
                     </s-stack>
                 </s-stack>
@@ -151,7 +150,7 @@ export function ExcelImportDialog({
         <s-section>
             <s-stack direction="block" gap="base">
                 <s-heading>Validation Report</s-heading>
-                {validationResult?.hasErrors && (
+                {(validationResult?.issues.length ?? 0) > 0 && (
                     <s-table>
                         <s-table-header-row>
                             <s-table-header>Row #</s-table-header>
@@ -171,17 +170,9 @@ export function ExcelImportDialog({
                                 </s-table-row>
                             ))}
                         </s-table-body>
-
-                        {validationResult.hasErrors && (
-                            <s-banner tone="critical">{validationResult.issues.length} errors found.
-                                Fix errors before saving </s-banner>
-                        )}
                     </s-table>
                 )}
 
-                {!validationResult?.hasErrors && (
-                    <s-banner tone="success">{validationResult?.validRows.length} rows validated successfully.</s-banner>
-                )}
             </s-stack>
             <s-stack direction="inline" gap="small">
                 <s-button
@@ -189,7 +180,7 @@ export function ExcelImportDialog({
                     disabled={validationResult?.hasErrors}
                     onClick={() => {
                         if (!validationResult) return;
-                        const formLine = validationResult.validRows.map((row) => {
+                        const formLine = validationResult.validRows?.map((row) => {
                             return {
                                 rowId: lineId(),
                                 sku: row.sku,
@@ -203,11 +194,16 @@ export function ExcelImportDialog({
 
                             }
                         })
-                        onImport(formLine);
+                        onImport(formLine ?? []);
 
                     }}
                 >
-                    Save
+                    Confirm
+                </s-button>
+                <s-button
+                    variant="secondary"
+                    onClick={() => setPhase("mapping")}
+                > Back
                 </s-button>
             </s-stack>
         </s-section>

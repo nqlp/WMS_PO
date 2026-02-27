@@ -15,8 +15,7 @@ import type {
     PurchaseOrderFormProps,
     VariantOption,
 } from '@/components/po-form.types';
-import { parsePurchaseOrderItemsFile } from '@/lib/po/item-import/parsePurchaseOrderItemsFile';
-import type { PurchaseOrderImportError, ValidatedCsvRow } from '@/lib/po/item-import/types';
+import { parseCsvHeaders } from '@/lib/po/item-import/parseCsvPurchaseOrderItems';
 
 /* ------------------------------------------------------------------ */
 /*  State                                                              */
@@ -717,34 +716,23 @@ export function usePurchaseOrderForm({
     const importItemsFromFile = useCallback(async (file: File) => {
         dispatch({ type: "SET_HEADER_ERROR", error: null });
 
-        const result = await parsePurchaseOrderItemsFile(file);
+        try {
+            const content = await file.text();
+            const parsed = parseCsvHeaders(content);
 
-        if (!result.success) {
-            const lines = result.errors.map((error: PurchaseOrderImportError) => {
-                const row = error.csvRowNumber ? `Row ${error.csvRowNumber}` : "CSV";
-                const field = error.field ? ` [${error.field}]` : "";
-                return `${row}${field}: ${error.message}`;
-            });
-
-            dispatch({
-                type: "SET_HEADER_ERROR",
-                error: `CSV import failed:\n${lines.join("\n")}`,
-            });
-            return;
+            return parsed
         }
 
-        const importedLines: FormLine[] = result.parsedRows.map((row: ValidatedCsvRow) => ({
-            rowId: lineId(),
-            sku: row.sku,
-            productId: null,
-            productTitle: row.productTitle,
-            variantId: null,
-            variantTitle: row.variantTitle,
-            orderQty: String(row.orderQty),
-            unitCost: decimalText(row.unitCost),
-            skuError: null,
-        }));
-        dispatch({ type: "IMPORT_LINES", lines: importedLines });
+
+        catch (error) {
+            dispatch({
+                type: "SET_HEADER_ERROR",
+                error: "Failed to parse CSV file.",
+
+            });
+            console.error("Failed to parse CSV file", error);
+            return null;
+        }
     }, []);
 
     return {

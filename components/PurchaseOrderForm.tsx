@@ -79,7 +79,6 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
           selectProduct: form.selectProduct,
           selectVariant: form.selectVariant,
           searchVariants: form.searchVariants,
-          importItemsFromFile: form.importItemsFromFile,
           importLines: form.importLines,
         }}
       />

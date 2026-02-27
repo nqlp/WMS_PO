@@ -28,8 +28,8 @@ export async function POST(request: Request) {
         const roundToTwoDecimals = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 
         for (const row of rows) {
-            let resolvedSku = "";
-            let resolvedProductTitle = "";
+            let resolvedOrMatchedSku = "";
+            let resolvedOrMatchedProductTitle = "";
             let resolvedVariantTitle = "";
             let resolvedUnitCost: number | null = null;
 
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
             const qty = (row.qty ?? "").trim();
             const unitCost = (row.unit_cost ?? "").trim();
             resolvedVariantTitle = variant;
-            resolvedSku = sku;
+            resolvedOrMatchedSku = sku;
 
             if (sku && skuMapped) {
                 const matches = await validateSku(session, sku);
@@ -54,8 +54,8 @@ export async function POST(request: Request) {
                         severity: "error"
                     });
                 } else {
-                    resolvedSku = skuMatch.sku;
-                    resolvedProductTitle = skuMatch.productTitle;
+                    resolvedOrMatchedSku = skuMatch.sku;
+                    resolvedOrMatchedProductTitle = skuMatch.productTitle;
                     resolvedVariantTitle = skuMatch.variantTitle;
                 }
             } else {
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
                 } else {
                     try {
                         const matches = await validateProductByHandle(session, productHandle);
-                        resolvedProductTitle = matches.title;
+                        resolvedOrMatchedProductTitle = matches.title;
                     } catch (error) {
                         issues.push({
                             rowNumber: row.rowNumber,
@@ -81,25 +81,33 @@ export async function POST(request: Request) {
                         });
                         console.error("Error validating product handle:", error);
                     }
-
                 }
             }
-            if (!qty || !qtyMapped) {
+            if (!qtyMapped) {
                 issues.push({
                     rowNumber: row.rowNumber,
                     sku,
                     field: "qty",
-                    message: "Quantity required",
+                    message: "Quantity column is not mapped",
                     severity: "error"
                 });
-            } else {
+            } else if (!qty) {
+                issues.push({
+                    rowNumber: row.rowNumber,
+                    sku,
+                    field: "qty",
+                    message: "Quantity is required",
+                    severity: "error"
+                })
+            }
+            else {
                 const qtyNumber = Number(qty);
                 if (!Number.isInteger(qtyNumber) || qtyNumber < 1) {
                     issues.push({
                         rowNumber: row.rowNumber,
                         sku,
                         field: "qty",
-                        message: "Quantity must be a positive integer",
+                        message: "Quantity must be an integer greater than or equal to 1",
                         severity: "error"
                     });
                 }
@@ -127,8 +135,8 @@ export async function POST(request: Request) {
             if (!rowHasError) {
                 validRows.push({
                     csvRowNumber: row.rowNumber,
-                    sku: resolvedSku,
-                    productTitle: resolvedProductTitle,
+                    sku: resolvedOrMatchedSku,
+                    productTitle: resolvedOrMatchedProductTitle,
                     variantTitle: resolvedVariantTitle,
                     orderQty: Number(qty),
                     unitCost: resolvedUnitCost,
