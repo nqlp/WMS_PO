@@ -173,6 +173,31 @@ export function ExcelImportDialog({
                     </s-table>
                 )}
 
+                {(validationResult?.validRows?.length ?? 0) > 0 && (
+                    <s-table>
+                        <s-table-header-row>
+                            <s-table-header>Row #</s-table-header>
+                            <s-table-header>SKU</s-table-header>
+                            <s-table-header>Product Title</s-table-header>
+                            <s-table-header>Variant Title</s-table-header>
+                            <s-table-header>Order Qty</s-table-header>
+                            <s-table-header>Unit Cost</s-table-header>
+                        </s-table-header-row>
+                        <s-table-body>
+                            {validationResult?.validRows?.map((row) => (
+                                <s-table-row key={row.csvRowNumber}>
+                                    <s-table-cell>{row.csvRowNumber}</s-table-cell>
+                                    <s-table-cell>{row.sku}</s-table-cell>
+                                    <s-table-cell>{row.productTitle}</s-table-cell>
+                                    <s-table-cell>{row.variantTitle}</s-table-cell>
+                                    <s-table-cell>{row.orderQty}</s-table-cell>
+                                    <s-table-cell>{row.unitCost ?? ""}</s-table-cell>
+                                </s-table-row>
+                            ))}
+                        </s-table-body>
+                    </s-table>
+                )}
+
             </s-stack>
             <s-stack direction="inline" gap="small">
                 <s-button
@@ -198,7 +223,7 @@ export function ExcelImportDialog({
 
                     }}
                 >
-                    Confirm
+                    Save
                 </s-button>
                 <s-button
                     variant="secondary"

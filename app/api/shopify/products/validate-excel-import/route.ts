@@ -131,7 +131,7 @@ export async function POST(request: Request) {
                 }
             }
 
-            const rowHasError = issues.some((issue) => issue.rowNumber === row.rowNumber);
+            const rowHasError = issues.some((issue) => issue.rowNumber === row.rowNumber && issue.severity === "error");
             if (!rowHasError) {
                 validRows.push({
                     csvRowNumber: row.rowNumber,
