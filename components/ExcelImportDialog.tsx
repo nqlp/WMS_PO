@@ -40,7 +40,7 @@ export function ExcelImportDialog({
         setValidationResult(null);
 
         try {
-            const skuMapped = mapping.some(m => m.targetField === "SKU")
+            const skuMapped = mapping.some(m => m.targetField === "sku")
             const productHandleMapped = mapping.some(m => m.targetField === "product_handle")
             const qtyMapped = mapping.some(m => m.targetField === "qty")
             const unitCostMapped = mapping.some(m => m.targetField === "unit_cost")

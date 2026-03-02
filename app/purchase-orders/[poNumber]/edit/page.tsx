@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 
-import { PurchaseOrderEditPage } from '@/components/purchase-order-edit-page';
+import { PurchaseOrderEditPage } from '@/components/PurchaserOrderEditPage';
 
 export default async function PurchaseOrderEditRoute({
   params

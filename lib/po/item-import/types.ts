@@ -23,9 +23,9 @@ export type PurchaseOrderImportParseResult =
         errors: PurchaseOrderImportError[];
     };
 
-export type CsvTargetField = "SKU" | "product_handle" | "Variant" | "qty" | "unit_cost";
+export type CsvTargetField = "sku" | "product_handle" | "variant" | "qty" | "unit_cost";
 
-export const TARGET_FIELDS: CsvTargetField[] = ["SKU", "product_handle", "Variant", "qty", "unit_cost"];
+export const TARGET_FIELDS: CsvTargetField[] = ["sku", "product_handle", "variant", "qty", "unit_cost"];
 
 export type CsvColumnMapping = {
     csvColumn: string,

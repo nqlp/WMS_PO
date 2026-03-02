@@ -5,10 +5,8 @@ import { NextResponse } from "next/server";
 
 interface MappedRows {
     rowNumber: number;
-    SKU?: string;
     sku?: string;
     product_handle?: string;
-    Variant?: string;
     variant?: string;
     qty?: string;
     unit_cost?: string;
@@ -33,11 +31,11 @@ export async function POST(request: Request) {
             let resolvedVariantTitle = "";
             let resolvedUnitCost: number | null = null;
 
-            const sku = (row.SKU ?? row.sku ?? "").trim();
-            const productHandle = (row.product_handle ?? "").trim();
-            const variant = (row.Variant ?? row.variant ?? "").trim();
-            const qty = (row.qty ?? "").trim();
-            const unitCost = (row.unit_cost ?? "").trim();
+            const sku = row.sku?.trim() ?? "";
+            const productHandle = row.product_handle?.trim() ?? "";
+            const variant = row.variant?.trim() ?? "";
+            const qty = row.qty?.trim() ?? "";
+            const unitCost = row.unit_cost?.trim() ?? "";
             resolvedVariantTitle = variant;
             resolvedOrMatchedSku = sku;
 

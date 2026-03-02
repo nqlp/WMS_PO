@@ -3,6 +3,7 @@ import { verifyProductTitlesExist } from '../shopify/catalog';
 import type { AuthenticatedSession } from '@/lib/auth/session-token';
 import { ApiError } from '@/lib/http';
 import { prisma } from '@/lib/prisma';
+import { resolveUserDisplay } from '@/lib/shopify/user-actor';
 import type {
   CreatePurchaseOrderInput,
   PurchaseOrderLineInput,
@@ -38,10 +39,6 @@ function parseNullableText(value: string | null | undefined): string | null {
 
   const trimmed = value.trim();
   return trimmed.length === 0 ? null : trimmed;
-}
-
-function actor(session: AuthenticatedSession): string {
-  return session.userId || session.shop;
 }
 
 function serializePurchaseOrder(header: PoHeaderWithItems) {
@@ -87,7 +84,7 @@ function toItemCreateInput(
 
 export async function createPurchaseOrder(session: AuthenticatedSession, input: CreatePurchaseOrderInput) {
   const now = new Date();
-  const createdBy = actor(session);
+  const createdBy = await resolveUserDisplay(session);
 
   const productTitles = input.items.map((line) => line.productTitle);
   const { invalidTitles } = await verifyProductTitlesExist(session, productTitles);
@@ -275,7 +272,7 @@ export async function updatePurchaseOrder(
   input: UpdatePurchaseOrderInput
 ) {
   const now = new Date();
-  const modifiedBy = actor(session);
+  const modifiedBy = await resolveUserDisplay(session);
 
   const productTitles = input.items.map((line) => line.productTitle);
   const { invalidTitles } = await verifyProductTitlesExist(session, productTitles);
