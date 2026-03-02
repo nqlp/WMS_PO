@@ -25,6 +25,26 @@ export async function POST(request: Request) {
         const validRows: ValidatedCsvRow[] = [];
         const roundToTwoDecimals = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 
+        const uniqueSkus = skuMapped ? [...new Set(rows.filter(row => row.sku?.trim()).map(row => row.sku!.trim()))] : [];
+        const uniqueProductHandles = productHandleMapped ? [...new Set(rows.filter(row => row.product_handle?.trim()).map(row => row.product_handle!.trim()))] : [];
+
+        // Pre-fetch all SKU and product handle validations to minimize redundant API calls
+        const [skuValidations, handleValidations] = await Promise.all([
+            Promise.all(uniqueSkus.map(async (sku) => [sku.toLowerCase(), await validateSku(session, sku)] as const)),
+            Promise.all(uniqueProductHandles.map(async (handle) => {
+                try {
+                    return [handle.toLowerCase(), await validateProductByHandle(session, handle)] as const;
+                }
+                catch (error) {
+                    console.error(`Error validating product handle "${handle}":`, error);
+                    return [handle.toLowerCase(), null] as const;
+                }
+            }))
+        ]);
+
+        const skuValidationMap = new Map(skuValidations);
+        const handleValidationMap = new Map(handleValidations);
+
         for (const row of rows) {
             let resolvedOrMatchedSku = "";
             let resolvedOrMatchedProductTitle = "";
@@ -40,7 +60,7 @@ export async function POST(request: Request) {
             resolvedOrMatchedSku = sku;
 
             if (sku && skuMapped) {
-                const matches = await validateSku(session, sku);
+                const matches = skuValidationMap.get(sku.toLowerCase()) ?? [];
                 const skuMatch = matches[0];
 
                 if (!skuMatch) {
@@ -67,8 +87,11 @@ export async function POST(request: Request) {
                     });
                 } else {
                     try {
-                        const matches = await validateProductByHandle(session, productHandle);
-                        resolvedOrMatchedProductTitle = matches.title;
+                        const product = handleValidationMap.get(productHandle.toLowerCase());
+                        if (!product) {
+                            throw new Error(`Product handle "${productHandle}" not found`);
+                        }
+                        resolvedOrMatchedProductTitle = product.title;
                     } catch (error) {
                         issues.push({
                             rowNumber: row.rowNumber,
