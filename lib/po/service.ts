@@ -1,86 +1,16 @@
-import type { PoHeader, PoItem, Prisma } from '@prisma/client';
-import { verifyProductTitlesExist } from '../shopify/catalog';
+import { verifyProductTitlesExist } from '@/lib/shopify/catalog'; // ✅
 import type { AuthenticatedSession } from '@/lib/auth/session-token';
 import { ApiError } from '@/lib/http';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { resolveUserDisplay } from '@/lib/shopify/user-actor';
 import type {
   CreatePurchaseOrderInput,
-  PurchaseOrderLineInput,
+  UpdatePurchaseOrderInput,
   PurchaseOrderListFilters,
-  UpdatePurchaseOrderInput
 } from '@/lib/validation/po';
-
-type PoHeaderWithItems = PoHeader & { items: PoItem[] };
-type SortBy = NonNullable<PurchaseOrderListFilters["sortBy"]>;
-
-function parseDate(value: string | null | undefined, options: { endOfDay?: boolean } = {}): Date | null {
-  if (!value) {
-    return null;
-  }
-
-  const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value);
-  const parsed = new Date(isDateOnly ? `${value}T00:00:00.000Z` : value);
-  if (Number.isNaN(parsed.getTime())) {
-    throw new ApiError(400, `Invalid date value: ${value}`);
-  }
-
-  if (options.endOfDay && isDateOnly) {
-    parsed.setUTCHours(23, 59, 59, 999);
-  }
-
-  return parsed;
-}
-
-function parseNullableText(value: string | null | undefined): string | null {
-  if (value == null) {
-    return null;
-  }
-
-  const trimmed = value.trim();
-  return trimmed.length === 0 ? null : trimmed;
-}
-
-function serializePurchaseOrder(header: PoHeaderWithItems) {
-  return {
-    ...header,
-    poNumber: header.poNumber.toString(),
-    items: header.items.map((item) => ({
-      ...item,
-      poNumber: item.poNumber.toString()
-    }))
-  };
-}
-
-function toItemCreateInput(
-  poNumber: bigint,
-  line: PurchaseOrderLineInput,
-  poItem: number,
-  now: Date,
-  modificationUser: string,
-  carryForward?: { receivedQty: number | null; status: string; lastReceivingDate: Date | null }
-): Prisma.PoItemCreateManyInput {
-  const receivedQty = carryForward?.receivedQty ?? 0;
-
-  if (receivedQty != null && receivedQty > line.orderQty) {
-    throw new ApiError(400, `received_qty cannot exceed order_qty for line ${poItem}`);
-  }
-
-  return {
-    poNumber,
-    poItem,
-    productTitle: line.productTitle,
-    variantTitle: line.variantTitle,
-    sku: parseNullableText(line.sku),
-    orderQty: line.orderQty,
-    receivedQty,
-    status: carryForward?.status ?? "OPEN",
-    unitCost: line.unitCost ?? null,
-    lastReceivingDate: carryForward?.lastReceivingDate ?? null,
-    lastModification: now,
-    lastModificationUser: modificationUser
-  };
-}
+import { parseDate, applyFilters, SORT_COLUMN_MAP, type SortBy } from '@/lib/po/filters';
+import { parseNullableText, serializePurchaseOrder, toItemCreateInput } from './transformers';
 
 export async function createPurchaseOrder(session: AuthenticatedSession, input: CreatePurchaseOrderInput) {
   const now = new Date();
@@ -124,120 +54,6 @@ export async function createPurchaseOrder(session: AuthenticatedSession, input: 
   });
 
   return result;
-}
-
-function applyDateRange(
-  where: Prisma.PoHeaderWhereInput,
-  field: "expectedDate" | "createdAt",
-  startValue?: string,
-  endValue?: string
-) {
-  const start = parseDate(startValue);
-  const end = parseDate(endValue, { endOfDay: field === "createdAt" });
-
-  if (!start && !end) {
-    return;
-  }
-
-  where[field] = {
-    ...(start ? { gte: start } : {}),
-    ...(end ? { lte: end } : {})
-  };
-}
-
-function applyFilters(session: AuthenticatedSession, filters: PurchaseOrderListFilters): Prisma.PoHeaderWhereInput {
-  const where: Prisma.PoHeaderWhereInput = {
-    scope: {
-      is: {
-        shop: session.shop
-      }
-    }
-  };
-
-  if (filters.status) {
-    where.status = filters.status;
-  }
-
-  if (filters.vendor) {
-    where.vendor = {
-      equals: filters.vendor,
-      mode: "insensitive"
-    };
-  }
-
-  if (filters.poNumber) {
-    where.poNumber = filters.poNumber;
-  }
-
-  if (typeof filters.importDuties === "boolean") {
-    where.importDuties = filters.importDuties;
-  }
-
-  if (filters.importType) {
-    where.importType = filters.importType;
-  }
-
-  if (typeof filters.hasNotes === "boolean") {
-    if (filters.hasNotes) {
-      where.AND = [{ notes: { not: null } }, { notes: { not: "" } }];
-    } else {
-      where.OR = [{ notes: null }, { notes: "" }];
-    }
-  }
-
-  applyDateRange(where, "expectedDate", filters.expectedDateStart, filters.expectedDateEnd);
-  applyDateRange(where, "createdAt", filters.createdAtStart, filters.createdAtEnd);
-
-  return where;
-}
-
-const SORT_COLUMN_MAP: Record<SortBy, keyof Prisma.PoHeaderOrderByWithRelationInput> = {
-  poNumber: "poNumber",
-  createdAt: "createdAt",
-  expectedDate: "expectedDate",
-  status: "status",
-  vendor: "vendor"
-};
-
-export async function listPurchaseOrders(session: AuthenticatedSession, filters: PurchaseOrderListFilters) {
-  const where = applyFilters(session, filters);
-  const sortBy: SortBy = filters.sortBy ?? "createdAt";
-  const sortDirection: Prisma.SortOrder = filters.sortDirection ?? "desc";
-
-  const headers = await prisma.poHeader.findMany({
-    where,
-    orderBy: {
-      [SORT_COLUMN_MAP[sortBy]]: sortDirection
-    },
-    include: {
-      items: true
-    }
-  });
-
-  return headers.map((header) => {
-    const itemCount = header.items.length;
-    const pieces = header.items.reduce((sum, item) => sum + item.orderQty, 0);
-    const lastModification = header.items.reduce<Date | null>((max, item) => {
-      if (!max || item.lastModification > max) {
-        return item.lastModification;
-      }
-      return max;
-    }, null);
-
-    return {
-      poNumber: header.poNumber.toString(),
-      status: header.status,
-      vendor: header.vendor,
-      createdAt: header.createdAt,
-      expectedDate: header.expectedDate,
-      importDuties: header.importDuties,
-      importType: header.importType,
-      notes: header.notes,
-      itemCount,
-      pieces,
-      lastModification
-    };
-  });
 }
 
 export async function getPurchaseOrder(session: AuthenticatedSession, poNumber: bigint) {
@@ -387,4 +203,45 @@ export async function checkInPurchaseOrder(session: AuthenticatedSession, poNumb
   });
 
   return result;
+}
+
+export async function listPurchaseOrders(session: AuthenticatedSession, filters: PurchaseOrderListFilters) {
+  const where: Prisma.PoHeaderWhereInput = applyFilters(session, filters);
+  const sortBy: SortBy = filters.sortBy ?? "createdAt";
+  const sortDirection: Prisma.SortOrder = filters.sortDirection ?? "desc";
+
+  const headers = await prisma.poHeader.findMany({
+    where,
+    orderBy: {
+      [SORT_COLUMN_MAP[sortBy]]: sortDirection
+    },
+    include: {
+      items: true
+    }
+  });
+
+  return headers.map((header) => {
+    const itemCount = header.items.length;
+    const pieces = header.items.reduce((sum, item) => sum + item.orderQty, 0);
+    const lastModification = header.items.reduce<Date | null>((max, item) => {
+      if (!max || item.lastModification > max) {
+        return item.lastModification;
+      }
+      return max;
+    }, null);
+
+    return {
+      poNumber: header.poNumber.toString(),
+      status: header.status,
+      vendor: header.vendor,
+      createdAt: header.createdAt,
+      expectedDate: header.expectedDate,
+      importDuties: header.importDuties,
+      importType: header.importType,
+      notes: header.notes,
+      itemCount,
+      pieces,
+      lastModification
+    };
+  });
 }
