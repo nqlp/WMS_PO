@@ -16,12 +16,7 @@ export async function createPurchaseOrder(session: AuthenticatedSession, input: 
   const now = new Date();
   const createdBy = await resolveUserDisplay(session);
 
-  const productTitles = input.items.map((line) => line.productTitle);
-  const { invalidTitles } = await verifyProductTitlesExist(session, productTitles);
-
-  if (invalidTitles.length > 0) {
-    throw new ApiError(422, `The following product titles do not exist in the catalog: ${invalidTitles.join(', ')}`);
-  }
+  await validatePoItems(session, input.items);
   const result = await prisma.$transaction(async (tx) => {
     const header = await tx.poHeader.create({
       data: {
@@ -90,13 +85,7 @@ export async function updatePurchaseOrder(
   const now = new Date();
   const modifiedBy = await resolveUserDisplay(session);
 
-  const productTitles = input.items.map((line) => line.productTitle);
-  const { invalidTitles } = await verifyProductTitlesExist(session, productTitles);
-
-  if (invalidTitles.length > 0) {
-    throw new ApiError(422, `The following product titles do not exist in the catalog: ${invalidTitles.join(", ")}`);
-  }
-
+  await validatePoItems(session, input.items);
   const result = await prisma.$transaction(async (tx) => {
     const existing = await tx.poHeader.findFirst({
       where: {
@@ -244,4 +233,13 @@ export async function listPurchaseOrders(session: AuthenticatedSession, filters:
       lastModification
     };
   });
+}
+
+async function validatePoItems(session: AuthenticatedSession, items: Array<{ productTitle: string }>): Promise<void> {
+  const productTitles = items.map((line) => line.productTitle);
+  const { invalidTitles } = await verifyProductTitlesExist(session, productTitles);
+
+  if (invalidTitles.length > 0) {
+    throw new ApiError(422, `The following product titles do not exist in the catalog: ${invalidTitles.join(', ')}`);
+  }
 }

@@ -74,17 +74,17 @@ export function PurchaseOrderForm({ mode, title, initialData, readOnly = false }
           addLine: form.addLine,
           removeLine: form.removeLine,
           updateLine: form.updateLine,
+          importLines: form.importLines,
           validateSkuForLine: form.validateSkuForLine,
           searchProducts: form.searchProducts,
           selectProduct: form.selectProduct,
           selectVariant: form.selectVariant,
           searchVariants: form.searchVariants,
-          importLines: form.importLines,
         }}
       />
       <s-stack direction="inline" gap="small">
         {!readOnly ? (
-          <s-button type="submit" variant="primary" onClick={() => form.submit()} disabled={form.submitting}>
+          <s-button type="submit" variant="primary" onClick={form.submit} disabled={form.submitting}>
             {form.submitting ? "Saving..." : mode === "create" ? "Create Purchase Order" : "Save Changes"}
           </s-button>
         ) : null}

@@ -1,10 +1,8 @@
 "use client";
 
-import { type SetStateAction, useCallback, useEffect, useMemo, useReducer } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSearchParams } from 'next/navigation';
+import { type SetStateAction, useCallback, useMemo, useReducer } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { DEFAULT_CURRENCY } from '@/lib/constants';
-import { apiFetch } from '@/lib/client/api';
 import { withEmbeddedParams } from '@/lib/client/embedded-url';
 import { useEmbeddedBootstrap, useVendors } from '@/lib/client/hooks';
 import { lineId, emptyLine, decimalText } from '@/components/po-form.utils';
@@ -16,12 +14,15 @@ import type {
     VariantOption,
 } from '@/components/po-form.types';
 import { parseCsvHeaders } from '@/lib/po/item-import/parseCsvPurchaseOrderItems';
+import { useSkuValidation } from '@/components/hooks/useSkuValidation';
+import { useProductSearch } from '@/components/hooks/useProductSearch';
+import { usePurchaseOrderSubmit } from '@/components/hooks/usePurchaseOrderSubmit';
 
 /* ------------------------------------------------------------------ */
 /*  State                                                              */
 /* ------------------------------------------------------------------ */
 
-interface FormState {
+export interface FormState {
     // Header fields
     vendor: string;
     importDuties: boolean;
@@ -55,7 +56,7 @@ interface FormState {
 /*  Actions                                                            */
 /* ------------------------------------------------------------------ */
 
-type FormAction =
+export type FormAction =
     // Header
     | { type: "SET_VENDOR"; value: string }
     | { type: "SET_IMPORT_DUTIES"; value: boolean }
@@ -307,15 +308,28 @@ export function usePurchaseOrderForm({
         () => new Set(state.lines.filter((line) => line.sku.trim()).map((line) => line.rowId)),
         [state.lines]
     );
-    const isSkuValidationLoading = state.validatingSkuRows.size > 0;
 
-    /* Side effect: loading cursor */
-    useEffect(() => {
-        document.body.classList.toggle("sku-loading-cursor", isSkuValidationLoading);
-        return () => {
-            document.body.classList.remove("sku-loading-cursor");
-        };
-    }, [isSkuValidationLoading]);
+    /* Sub-hooks */
+    const { validateSkuForLine, isSkuValidationLoading } = useSkuValidation({
+        lines: state.lines,
+        validatingSkuRows: state.validatingSkuRows,
+        dispatch,
+    });
+
+    const { searchProducts, searchVariants, selectProduct, selectVariant } = useProductSearch({
+        dispatch,
+    });
+
+    const { submit } = usePurchaseOrderSubmit({
+        state,
+        dispatch,
+        bootstrap,
+        mode,
+        initialData,
+        readOnly,
+        searchParams,
+        router,
+    });
 
     /* ---- Line helpers ---- */
 
@@ -335,383 +349,6 @@ export function usePurchaseOrderForm({
         dispatch({ type: "CLEAR_ROW_DATA", rowId });
     }, []);
 
-    /* ---- SKU validation ---- */
-
-    const validateSkuForLine = useCallback(
-        async (rowId: string) => {
-            const row = state.lines.find((line) => line.rowId === rowId);
-            if (!row) return;
-
-            const sku = row.sku.trim();
-            if (!sku) {
-                dispatch({ type: "UPDATE_LINE", rowId, updater: (line) => ({ ...line, skuError: null }) });
-                return;
-            }
-
-            try {
-                dispatch({ type: "SKU_VALIDATION_START", rowId });
-                const payload = await apiFetch<{
-                    matches: Array<{
-                        variantId: string;
-                        sku: string;
-                        productId: string;
-                        productTitle: string;
-                        variantTitle: string;
-                    }>;
-                    count: number;
-                }>(`/api/shopify/variants/validate-sku?sku=${encodeURIComponent(sku)}`);
-
-                if (payload.count === 0) {
-                    dispatch({
-                        type: "UPDATE_LINE",
-                        rowId,
-                        updater: (line) => ({
-                            ...line,
-                            variantId: null,
-                            skuError: "SKU not found in Shopify variants",
-                        }),
-                    });
-                    return;
-                }
-
-                if (payload.count > 1) {
-                    dispatch({
-                        type: "UPDATE_LINE",
-                        rowId,
-                        updater: (line) => ({
-                            ...line,
-                            variantId: null,
-                            skuError: "SKU matched multiple variants",
-                        }),
-                    });
-                    return;
-                }
-
-                const [match] = payload.matches;
-                if (!match) {
-                    dispatch({
-                        type: "UPDATE_LINE",
-                        rowId,
-                        updater: (line) => ({
-                            ...line,
-                            variantId: null,
-                            skuError: "SKU validation returned no match",
-                        }),
-                    });
-                    return;
-                }
-
-                dispatch({
-                    type: "UPDATE_LINE",
-                    rowId,
-                    updater: (line) => ({
-                        ...line,
-                        sku: match.sku,
-                        productId: match.productId,
-                        productTitle: match.productTitle,
-                        variantId: match.variantId,
-                        variantTitle: match.variantTitle,
-                        skuError: null,
-                    }),
-                });
-
-                dispatch({ type: "SET_PRODUCT_SUGGESTIONS", rowId, products: [] });
-                dispatch({ type: "SET_VARIANT_SUGGESTIONS", rowId, variants: [] });
-                dispatch({ type: "CLEAR_POPOVER_IF_MATCH", rowId, target: "product" });
-                dispatch({ type: "CLEAR_POPOVER_IF_MATCH", rowId, target: "variant" });
-            } catch (error) {
-                console.error("Error validating SKU", error);
-                dispatch({
-                    type: "UPDATE_LINE",
-                    rowId,
-                    updater: (line) => ({
-                        ...line,
-                        skuError: error instanceof Error ? error.message : "Unable to validate SKU",
-                    }),
-                });
-            } finally {
-                dispatch({ type: "SKU_VALIDATION_END", rowId });
-            }
-        },
-        [state.lines]
-    );
-
-    /* ---- Search ---- */
-
-    const searchProducts = useCallback(async (rowId: string, query: string) => {
-        if (query.trim().length < 2) {
-            dispatch({ type: "SET_PRODUCT_SUGGESTIONS", rowId, products: [] });
-            dispatch({ type: "CLEAR_POPOVER_IF_MATCH", rowId, target: "product" });
-            return;
-        }
-
-        try {
-            const payload = await apiFetch<{ products: ProductOption[] }>(
-                `/api/shopify/products/search?q=${encodeURIComponent(query)}`
-            );
-            dispatch({ type: "SET_PRODUCT_SUGGESTIONS", rowId, products: payload.products });
-            dispatch({ type: "SET_ACTIVE_PRODUCT_POPOVER", rowId });
-        } catch {
-            dispatch({ type: "SET_PRODUCT_SUGGESTIONS", rowId, products: [] });
-            dispatch({ type: "CLEAR_POPOVER_IF_MATCH", rowId, target: "product" });
-        }
-    }, []);
-
-    const searchVariants = useCallback(async (rowId: string, query: string) => {
-        if (query.trim().length < 1) {
-            dispatch({ type: "SET_VARIANT_SEARCH_RESULTS", rowId, variants: [] });
-            dispatch({ type: "CLEAR_POPOVER_IF_MATCH", rowId, target: "variant" });
-            return;
-        }
-
-        try {
-            const payload = await apiFetch<{ variants: VariantOption[] }>(
-                `/api/shopify/variants/search?q=${encodeURIComponent(query)}`
-            );
-            dispatch({ type: "SET_VARIANT_SEARCH_RESULTS", rowId, variants: payload.variants });
-            dispatch({ type: "SET_ACTIVE_VARIANT_POPOVER", rowId });
-        } catch {
-            dispatch({ type: "SET_VARIANT_SEARCH_RESULTS", rowId, variants: [] });
-            dispatch({ type: "CLEAR_POPOVER_IF_MATCH", rowId, target: "variant" });
-        }
-    }, []);
-
-    /* ---- Select product / variant ---- */
-
-    const selectProduct = useCallback(async (rowId: string, product: ProductOption) => {
-        dispatch({
-            type: "UPDATE_LINE",
-            rowId,
-            updater: (line) => ({
-                ...line,
-                productId: product.id,
-                productTitle: product.title,
-                variantId: null,
-                variantTitle: "",
-            }),
-        });
-
-        dispatch({ type: "SET_PRODUCT_SUGGESTIONS", rowId, products: [] });
-        dispatch({ type: "CLEAR_POPOVER_IF_MATCH", rowId, target: "product" });
-
-        try {
-            const payload = await apiFetch<{ variants: VariantOption[] }>(
-                `/api/shopify/products/${encodeURIComponent(product.id)}/variants`
-            );
-            dispatch({ type: "SET_VARIANT_SUGGESTIONS", rowId, variants: payload.variants });
-        } catch {
-            dispatch({ type: "SET_VARIANT_SUGGESTIONS", rowId, variants: product.variants ?? [] });
-        }
-    }, []);
-
-    const selectVariant = useCallback((rowId: string, variant: VariantOption) => {
-        dispatch({
-            type: "UPDATE_LINE",
-            rowId,
-            updater: (line) => ({
-                ...line,
-                variantId: variant.id,
-                variantTitle: variant.variantTitle,
-                sku: line.sku || variant.sku || "",
-                skuError: null,
-                ...(variant.productId && !line.productId ? { productId: variant.productId } : {}),
-                ...(variant.productTitle && !line.productTitle ? { productTitle: variant.productTitle } : {}),
-            }),
-        });
-        dispatch({ type: "SET_VARIANT_SEARCH_RESULTS", rowId, variants: [] });
-        dispatch({ type: "CLEAR_POPOVER_IF_MATCH", rowId, target: "variant" });
-    }, []);
-
-    /* ---- Validation ---- */
-
-    const validateBeforeSubmit = useCallback(async (): Promise<boolean> => {
-        dispatch({ type: "SET_SUBMIT_ERROR", error: null });
-        dispatch({ type: "SET_HEADER_ERROR", error: null });
-
-        if (!state.vendor.trim()) {
-            dispatch({ type: "SET_HEADER_ERROR", error: "Vendor is required" });
-            return false;
-        }
-
-        if (state.lines.length === 0) {
-            dispatch({ type: "SET_SUBMIT_ERROR", error: "At least one line item is required" });
-            return false;
-        }
-
-        for (const [index, line] of state.lines.entries()) {
-            if (line.skuError) {
-                dispatch({ type: "SET_SUBMIT_ERROR", error: `Line ${index + 1}: ${line.skuError}` });
-                return false;
-            }
-
-            if (!line.productTitle.trim()) {
-                dispatch({ type: "SET_SUBMIT_ERROR", error: `Line ${index + 1}: Product title is required` });
-                return false;
-            }
-
-            if (!line.variantTitle.trim()) {
-                dispatch({ type: "SET_SUBMIT_ERROR", error: `Line ${index + 1}: Variant title is required` });
-                return false;
-            }
-
-            const qty = Number.parseInt(line.orderQty, 10);
-            if (!Number.isInteger(qty) || qty < 1) {
-                dispatch({ type: "SET_SUBMIT_ERROR", error: `Line ${index + 1}: Order quantity must be an integer >= 1` });
-                return false;
-            }
-
-            if (line.unitCost.trim()) {
-                const money = Number(line.unitCost);
-                if (!Number.isFinite(money) || money < 0) {
-                    dispatch({ type: "SET_SUBMIT_ERROR", error: `Line ${index + 1}: Unit cost must be >= 0` });
-                    return false;
-                }
-            }
-        }
-
-        if (state.shippingFees.trim()) {
-            const money = Number(state.shippingFees);
-            if (!Number.isFinite(money) || money < 0) {
-                dispatch({ type: "SET_HEADER_ERROR", error: 'Shipping fees must be >= 0' });
-                return false;
-            }
-        }
-
-        const titlesToCheck = [
-            ...new Set(state.lines.map((line) => line.productTitle.trim()).filter(Boolean)),
-        ];
-        for (const title of titlesToCheck) {
-            try {
-                const payload = await apiFetch<{ products: ProductOption[] }>(
-                    `/api/shopify/products/search?q=${encodeURIComponent(title)}`
-                );
-                const exactMatch = payload.products.some(
-                    (p) => p.title.toLowerCase() === title.toLowerCase()
-                );
-                if (!exactMatch) {
-                    const lineIndex = state.lines.findIndex(
-                        (line) => line.productTitle.trim().toLowerCase() === title.toLowerCase()
-                    );
-                    dispatch({
-                        type: "SET_SUBMIT_ERROR",
-                        error: `Line ${lineIndex + 1}: Product "${title}" does not exist in Shopify`,
-                    });
-                    return false;
-                }
-            } catch {
-                dispatch({
-                    type: "SET_SUBMIT_ERROR",
-                    error: `Unable to verify product "${title}" in Shopify`,
-                });
-                return false;
-            }
-        }
-
-        return true;
-    }, [state.vendor, state.lines, state.shippingFees]);
-
-    /* ---- Submit ---- */
-
-    const submit = useCallback(async () => {
-        if (readOnly || state.submitting || bootstrap.loading) return;
-
-        if (!bootstrap.csrfToken) {
-            dispatch({
-                type: "SET_SUBMIT_ERROR",
-                error: "Creation failed: missing CSRF token. Reload the page and open the app from Shopify Admin.",
-            });
-            return;
-        }
-
-        const isValid = await validateBeforeSubmit();
-        if (!isValid) return;
-
-        const payload = {
-            header: {
-                vendor: state.vendor.trim(),
-                importDuties: state.importDuties,
-                importType: state.importType,
-                expectedDate: state.expectedDate || null,
-                shippingFees: state.shippingFees.trim() ? Number(state.shippingFees) : null,
-                purchaseOrderCurrency: state.purchaseOrderCurrency || DEFAULT_CURRENCY,
-                notes: state.notes.trim() || null,
-            },
-            items: state.lines.map((line) => ({
-                existingPoItem: line.existingPoItem,
-                sku: line.sku.trim() || null,
-                productTitle: line.productTitle.trim(),
-                variantTitle: line.variantTitle.trim(),
-                orderQty: Number.parseInt(line.orderQty, 10),
-                unitCost: line.unitCost.trim() ? Number(line.unitCost) : null,
-            })),
-        };
-
-        try {
-            dispatch({ type: "SET_SUBMITTING", value: true });
-            dispatch({ type: "SET_SUCCESS_MESSAGE", message: null });
-
-            if (mode === "create") {
-                const created = await apiFetch<{ poNumber: string }>('/api/purchase-orders', {
-                    method: "POST",
-                    csrfToken: bootstrap.csrfToken,
-                    body: JSON.stringify(payload),
-                });
-
-                dispatch({
-                    type: "SET_SUCCESS_MESSAGE",
-                    message: `Purchase order #${created.poNumber} created successfully.`,
-                });
-
-                const nextListHref = withEmbeddedParams(
-                    `/purchase-orders?createdPoNumber=${encodeURIComponent(created.poNumber)}`,
-                    searchParams
-                );
-                router.push(nextListHref);
-                router.refresh();
-            } else {
-                const poNumber = initialData?.poNumber;
-                if (!poNumber) throw new Error("Missing purchase order number");
-
-                await apiFetch<{ purchaseOrder: PurchaseOrderDto }>(
-                    `/api/purchase-orders/${poNumber}`,
-                    {
-                        method: "PATCH",
-                        csrfToken: bootstrap.csrfToken,
-                        body: JSON.stringify(payload),
-                    }
-                );
-
-                dispatch({
-                    type: "SET_SUCCESS_MESSAGE",
-                    message: `Purchase order #${poNumber} updated successfully.`,
-                });
-                router.refresh();
-            }
-        } catch (error) {
-            dispatch({ type: "SET_SUBMIT_ERROR", error: "Failed to update purchase order." });
-            console.error("Error submitting purchase order form", error);
-        } finally {
-            dispatch({ type: "SET_SUBMITTING", value: false });
-        }
-    }, [
-        readOnly,
-        state.submitting,
-        state.vendor,
-        state.importDuties,
-        state.importType,
-        state.expectedDate,
-        state.shippingFees,
-        state.purchaseOrderCurrency,
-        state.notes,
-        state.lines,
-        bootstrap.loading,
-        bootstrap.csrfToken,
-        mode,
-        initialData?.poNumber,
-        searchParams,
-        router,
-        validateBeforeSubmit,
-    ]);
 
     const importItemsFromFile = useCallback(async (file: File) => {
         dispatch({ type: "SET_HEADER_ERROR", error: null });
@@ -776,6 +413,10 @@ export function usePurchaseOrderForm({
         selectProduct,
         selectVariant,
 
+        // SKU validation
+        validateSkuForLine,
+        isSkuValidationLoading,
+
         // Popovers
         activeProductPopoverRowId: state.activeProductPopoverRowId,
         setActiveProductPopoverRowId: (action: SetStateAction<string | null>) => {
@@ -787,10 +428,6 @@ export function usePurchaseOrderForm({
             const rowId = typeof action === "function" ? action(state.activeVariantPopoverRowId) : action;
             dispatch({ type: "SET_ACTIVE_VARIANT_POPOVER", rowId });
         },
-
-        // Validation
-        validateSkuForLine,
-        isSkuValidationLoading,
 
         // Status
         headerError: state.headerError,
