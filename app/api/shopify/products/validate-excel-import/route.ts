@@ -167,7 +167,7 @@ export async function POST(request: Request) {
 
         const hasErrors = issues.some((issue) => issue.severity === "error");
         if (hasErrors) {
-            return NextResponse.json({ issues, hasErrors });
+            return NextResponse.json({ issues, hasErrors, validRows: [] });
         }
 
         return NextResponse.json({ issues, hasErrors, validRows });
