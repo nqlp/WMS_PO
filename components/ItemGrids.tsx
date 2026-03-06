@@ -6,6 +6,7 @@ import { eventValue } from '@/components/po-form.utils';
 import { ParseCsvData, parseCsvHeaders } from '@/lib/po/item-import/parseCsvPurchaseOrderItems';
 import { parseExcelHeaders } from '@/lib/po/item-import/parseExcelFile';
 import { ExcelImportDialog } from './ExcelImportDialog';
+import './ItemGrids.css';
 
 export interface ItemGridsData {
   lines: FormLine[];
