@@ -89,11 +89,11 @@ s-text-field.currency-display-field {
 }
 
 s-table-cell.col-product s-box.title-control-wrap {
-  width: 20rem;
+  width: 14rem;
 }
 
 s-table-cell.col-variant s-box.title-control-wrap {
-  width: 15rem;
+  width: 8rem;
 }
 
 s-button.title-suggest-btn {
