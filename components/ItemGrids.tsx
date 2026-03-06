@@ -100,18 +100,20 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
             ) : null}
           </s-stack>
 
-          <s-table variant="table">
-            <s-table-header-row>
-              <s-table-header className="col-item"><span className="table-header-label">Item</span></s-table-header>
-              <s-table-header className="col-sku"><span className="table-header-label">SKU</span></s-table-header>
-              <s-table-header className="col-product"><span className="table-header-label">Product Handle</span></s-table-header>
-              <s-table-header className="col-variant"><span className="table-header-label">Variant</span></s-table-header>
-              <s-table-header className="col-qty" format="numeric"><span className="table-header-label">Order Qty</span></s-table-header>
-              <s-table-header className="col-cost" format="numeric"><span className="table-header-label">Unit Cost</span></s-table-header>
-              <s-table-header className="col-currency" format="numeric"><span className="table-header-label">PO Currency</span></s-table-header>
-              <s-table-header className="col-actions"><span className="table-header-label">Actions</span></s-table-header>
-            </s-table-header-row>
-            <s-table-body>
+          <table className="item-grid-table">
+            <thead>
+              <tr>
+                <th className="col-item"><span className="table-header-label">Item</span></th>
+                <th className="col-sku"><span className="table-header-label">SKU</span></th>
+                <th className="col-product"><span className="table-header-label">Product Handle</span></th>
+                <th className="col-variant"><span className="table-header-label">Variant</span></th>
+                <th className="col-qty"><span className="table-header-label">Order Qty</span></th>
+                <th className="col-cost"><span className="table-header-label">Unit Cost</span></th>
+                <th className="col-currency"><span className="table-header-label">PO Currency</span></th>
+                <th className="col-actions"><span className="table-header-label">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
               {lines.map((line, index) => {
                 const lockBySku = immutableBySku.has(line.rowId);
                 const variants = variantSuggestions[line.rowId] ?? [];
@@ -124,12 +126,12 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
                   : (variantSearchResults[line.rowId] ?? []);
 
                 return (
-                  <s-table-row key={line.rowId}>
-                    <s-table-cell className="col-item">
+                  <tr key={line.rowId}>
+                    <td className="col-item">
                       <s-text>{index + 1}</s-text>
-                    </s-table-cell>
+                    </td>
 
-                    <s-table-cell className="col-sku">
+                    <td className="col-sku">
                       <s-stack direction="block" gap="small">
                         <s-text-field
                           value={line.sku}
@@ -161,9 +163,9 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
                         />
                         {line.skuError ? <s-text color="critical">{line.skuError}</s-text> : null}
                       </s-stack>
-                    </s-table-cell>
+                    </td>
 
-                    <s-table-cell className="col-product">
+                    <td className="col-product">
                       <s-stack direction="block" gap="small">
                         <s-box className="title-control-wrap">
                           <s-text-field
@@ -214,9 +216,9 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
                           </div>
                         ) : null}
                       </s-stack>
-                    </s-table-cell>
+                    </td>
 
-                    <s-table-cell className="col-variant">
+                    <td className="col-variant">
                       <s-stack direction="block" gap="small">
                         <s-box className="title-control-wrap">
                           <s-text-field
@@ -265,9 +267,9 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
                           </div>
                         ) : null}
                       </s-stack>
-                    </s-table-cell>
+                    </td>
 
-                    <s-table-cell className="col-qty">
+                    <td className="col-qty">
                       <s-number-field
                         className="qty-field"
                         value={line.orderQty}
@@ -278,9 +280,9 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
                           updateLine(line.rowId, (current) => ({ ...current, orderQty: eventValue(event) }))
                         }
                       />
-                    </s-table-cell>
+                    </td>
 
-                    <s-table-cell className="col-cost">
+                    <td className="col-cost">
                       <s-number-field
                         className="cost-field"
                         value={line.unitCost}
@@ -291,17 +293,17 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
                           updateLine(line.rowId, (current) => ({ ...current, unitCost: eventValue(event) }))
                         }
                       />
-                    </s-table-cell>
+                    </td>
 
-                    <s-table-cell className="col-currency">
+                    <td className="col-currency">
                       <s-text-field
                         className="currency-display-field"
                         value={purchaseOrderCurrency}
                         disabled={true}
                       />
-                    </s-table-cell>
+                    </td>
 
-                    <s-table-cell className="col-actions">
+                    <td className="col-actions">
                       {!readOnly ? (
                         <s-button
                           type="button"
@@ -312,12 +314,12 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
                           Remove
                         </s-button>
                       ) : null}
-                    </s-table-cell>
-                  </s-table-row>
+                    </td>
+                  </tr>
                 );
               })}
-            </s-table-body>
-          </s-table>
+            </tbody>
+          </table>
         </s-stack>
       </s-section>
 

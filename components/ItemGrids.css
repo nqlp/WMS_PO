@@ -1,12 +1,69 @@
+/* Loading cursor */
 body.sku-loading-cursor,
 body.sku-loading-cursor * {
   cursor: progress !important;
 }
 
+/* Disabled title field styling */
 s-text-field.title-field-disabled {
   opacity: 0.5 !important;
   filter: grayscale(1) !important;
   pointer-events: none;
+}
+
+/* Table base */
+.item-grid-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+/* Column widths (fixed layout propagates from <th>) */
+.item-grid-table .col-item {
+  width: 4%;
+}
+
+.item-grid-table .col-sku {
+  width: 14%;
+}
+
+.item-grid-table .col-product {
+  width: 28%;
+}
+
+.item-grid-table .col-variant {
+  width: 20%;
+}
+
+.item-grid-table .col-qty {
+  width: 8%;
+}
+
+.item-grid-table .col-cost {
+  width: 9%;
+}
+
+.item-grid-table .col-currency {
+  width: 7%;
+}
+
+.item-grid-table .col-actions {
+  width: 10%;
+}
+
+/* Header styling */
+.item-grid-table thead tr {
+  background-color: #f6f6f7;
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.item-grid-table th {
+  padding: 0.5rem;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  color: #6d7175;
+  text-align: left;
+  vertical-align: middle;
 }
 
 .table-header-label {
@@ -15,48 +72,36 @@ s-text-field.title-field-disabled {
   text-align: center;
 }
 
-s-table-header.col-item,
-s-table-cell.col-item {
-  width: 3rem;
+/* Cell styling */
+.item-grid-table td {
+  padding: 0.375rem 0.5rem;
+  vertical-align: top;
+  border-bottom: 1px solid #e1e3e5;
+  overflow: hidden;
 }
 
-s-table-header.col-qty,
-s-table-cell.col-qty {
-  width: 5rem;
+/* Allow popovers to expand in product/variant cells */
+.item-grid-table td.col-product,
+.item-grid-table td.col-variant {
+  overflow: visible;
 }
 
-s-table-header.col-cost,
-s-table-cell.col-cost {
-  width: 6rem;
+/* Row hover */
+.item-grid-table tbody tr:hover {
+  background-color: #f9fafb;
 }
 
-s-table-header.col-currency,
-s-table-cell.col-currency {
-  width: 4.5rem;
-}
-
-s-table-header.col-actions,
-s-table-cell.col-actions {
+/* Fields fill their cell */
+.item-grid-table td s-text-field,
+.item-grid-table td s-number-field {
+  width: 100%;
   min-width: 0;
+  box-sizing: border-box;
 }
 
-s-table-header.col-sku,
-s-table-cell.col-sku {
-  min-width: 0;
-}
-
-s-table-header.col-product,
-s-table-cell.col-product {
-  min-width: 0;
-}
-
-s-table-header.col-variant,
-s-table-cell.col-variant {
-  min-width: 0;
-}
-
+/* Title control wrapper */
 s-box.title-control-wrap {
-  display: inline-block;
+  display: block;
   width: 100%;
   min-width: 0;
 }
@@ -73,29 +118,7 @@ s-text-field.variant-title-field {
   min-width: 0;
 }
 
-s-number-field.qty-field {
-  width: 100%;
-  max-width: 5rem;
-}
-
-s-number-field.cost-field {
-  width: 100%;
-  max-width: 6rem;
-}
-
-s-text-field.currency-display-field {
-  width: 100%;
-  max-width: 4rem;
-}
-
-s-table-cell.col-product s-box.title-control-wrap {
-  width: 14rem;
-}
-
-s-table-cell.col-variant s-box.title-control-wrap {
-  width: 8rem;
-}
-
+/* Suggestion buttons */
 s-button.title-suggest-btn {
   width: 100%;
   justify-content: flex-start;
