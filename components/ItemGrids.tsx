@@ -101,14 +101,14 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
 
           <s-table variant="table">
             <s-table-header-row>
-              <s-table-header className="title-col-header"><span className="table-header-label">Item</span></s-table-header>
-              <s-table-header className="title-col-header"><span className="table-header-label">SKU</span></s-table-header>
-              <s-table-header className="title-col-header"><span className="table-header-label">Product Handle</span></s-table-header>
-              <s-table-header className="title-col-header"><span className="table-header-label">Variant</span></s-table-header>
-              <s-table-header className="title-col-header" format="numeric"><span className="table-header-label">Order Qty</span></s-table-header>
-              <s-table-header className="title-col-header" format="numeric"><span className="table-header-label">Unit Cost</span></s-table-header>
-              <s-table-header className="title-col-header" format="numeric"><span className="table-header-label">PO Currency</span></s-table-header>
-              <s-table-header className="title-col-header"><span className="table-header-label">Actions</span></s-table-header>
+              <s-table-header className="col-item"><span className="table-header-label">Item</span></s-table-header>
+              <s-table-header className="col-sku"><span className="table-header-label">SKU</span></s-table-header>
+              <s-table-header className="col-product"><span className="table-header-label">Product Handle</span></s-table-header>
+              <s-table-header className="col-variant"><span className="table-header-label">Variant</span></s-table-header>
+              <s-table-header className="col-qty" format="numeric"><span className="table-header-label">Order Qty</span></s-table-header>
+              <s-table-header className="col-cost" format="numeric"><span className="table-header-label">Unit Cost</span></s-table-header>
+              <s-table-header className="col-currency" format="numeric"><span className="table-header-label">PO Currency</span></s-table-header>
+              <s-table-header className="col-actions"><span className="table-header-label">Actions</span></s-table-header>
             </s-table-header-row>
             <s-table-body>
               {lines.map((line, index) => {
@@ -124,11 +124,11 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
 
                 return (
                   <s-table-row key={line.rowId}>
-                    <s-table-cell>
+                    <s-table-cell className="col-item">
                       <s-text>{index + 1}</s-text>
                     </s-table-cell>
 
-                    <s-table-cell>
+                    <s-table-cell className="col-sku">
                       <s-stack direction="block" gap="small">
                         <s-text-field
                           value={line.sku}
@@ -162,12 +162,13 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
                       </s-stack>
                     </s-table-cell>
 
-                    <s-table-cell className="title-col-cell">
+                    <s-table-cell className="col-product">
                       <s-stack direction="block" gap="small">
                         <s-box className="title-control-wrap">
                           <s-text-field
                             className={readOnly || lockBySku ? "product-title-field title-field-disabled" : "product-title-field"}
                             value={line.productTitle}
+                            style={{ textAlign: "center" }}
                             disabled={readOnly || lockBySku}
                             onInput={(event: Event) => {
                               const value = eventValue(event);
@@ -214,7 +215,7 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
                       </s-stack>
                     </s-table-cell>
 
-                    <s-table-cell className="title-col-cell">
+                    <s-table-cell className="col-variant">
                       <s-stack direction="block" gap="small">
                         <s-box className="title-control-wrap">
                           <s-text-field
@@ -265,8 +266,9 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
                       </s-stack>
                     </s-table-cell>
 
-                    <s-table-cell>
+                    <s-table-cell className="col-qty">
                       <s-number-field
+                        className="qty-field"
                         value={line.orderQty}
                         min="1"
                         step="1"
@@ -277,8 +279,9 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
                       />
                     </s-table-cell>
 
-                    <s-table-cell>
+                    <s-table-cell className="col-cost">
                       <s-number-field
+                        className="cost-field"
                         value={line.unitCost}
                         min="0"
                         step="0.01"
@@ -289,16 +292,22 @@ export function ItemGrids({ readOnly, data, popovers, actions }: ItemGridsProps)
                       />
                     </s-table-cell>
 
-                    <s-table-cell>
+                    <s-table-cell className="col-currency">
                       <s-text-field
+                        className="currency-display-field"
                         value={purchaseOrderCurrency}
                         disabled={true}
                       />
                     </s-table-cell>
 
-                    <s-table-cell>
+                    <s-table-cell className="col-actions">
                       {!readOnly ? (
-                        <s-button type="button" variant="secondary" tone="critical" onClick={() => removeLine(line.rowId)}>
+                        <s-button
+                          type="button"
+                          variant="secondary"
+                          tone="critical"
+                          onClick={() => removeLine(line.rowId)}
+                        >
                           Remove
                         </s-button>
                       ) : null}

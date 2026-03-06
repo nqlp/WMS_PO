@@ -122,7 +122,7 @@ export async function verifyProductTitlesExist(
         }
       }
       `,
-      { query: `title:"${title}"` }
+      { query: `title:"${title.replace(/"/g, '\\"')}"` }
     );
 
     const foundProduct = data.products.nodes.some((product) => product.title.toLowerCase() === title.toLowerCase());

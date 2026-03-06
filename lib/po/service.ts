@@ -240,6 +240,6 @@ async function validatePoItems(session: AuthenticatedSession, items: Array<{ pro
   const { invalidTitles } = await verifyProductTitlesExist(session, productTitles);
 
   if (invalidTitles.length > 0) {
-    throw new ApiError(422, `The following product titles do not exist in the catalog: ${invalidTitles.join(', ')}`);
+    throw new ApiError(422, `The following products were not found in the catalog: ${invalidTitles.join(', ')}`);
   }
 }

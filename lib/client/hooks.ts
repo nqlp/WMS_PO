@@ -18,9 +18,10 @@ export function useEmbeddedBootstrap() {
         if (isMounted) {
           setCsrfToken(token);
         }
-      } catch (cause) {
+      } catch (error) {
         if (isMounted) {
-          setError(cause instanceof Error ? cause.message : 'Failed to initialize Shopify session');
+          setError(error instanceof Error ? error.message : "Failed to initialize Shopify session");
+          console.error("Failed to initialize Shopify session:", error);
         }
       } finally {
         if (isMounted) {

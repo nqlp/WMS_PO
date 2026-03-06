@@ -133,29 +133,50 @@ s-text-field.title-field-disabled {
   pointer-events: none;
 }
 
-s-table-header.title-col-header {
-  min-width: 0 !important;
-}
-
 .table-header-label {
   display: block;
   width: 100%;
   text-align: center;
 }
 
-s-table-cell.title-col-cell {
-  min-width: 0 !important;
+s-table-header.col-item,
+s-table-cell.col-item {
+  width: 3rem;
 }
 
-s-table-cell.currency-col-cell {
-  width: 5rem;
-  text-align: center;
+s-table-header.col-qty,
+s-table-cell.col-qty {
+  width: 7rem;
 }
 
-s-select.currency-field {
-  display: block;
-  width: 5rem;
-  margin-inline: auto;
+s-table-header.col-cost,
+s-table-cell.col-cost {
+  width: 8rem;
+}
+
+s-table-header.col-currency,
+s-table-cell.col-currency {
+  width: 5.5rem;
+}
+
+s-table-header.col-actions,
+s-table-cell.col-actions {
+  min-width: 0;
+}
+
+s-table-header.col-sku,
+s-table-cell.col-sku {
+  min-width: 0;
+}
+
+s-table-header.col-product,
+s-table-cell.col-product {
+  min-width: 0;
+}
+
+s-table-header.col-variant,
+s-table-cell.col-variant {
+  min-width: 0;
 }
 
 s-box.title-control-wrap {
@@ -170,15 +191,25 @@ s-box.title-control-wrap s-text-field {
   min-width: 0;
 }
 
-s-text-field.product-title-field {
-  width: 10rem !important;
-  min-width: 10rem !important;
-}
-
+s-text-field.product-title-field,
 s-text-field.variant-title-field {
   width: 100%;
-  max-width: 15rem;
   min-width: 0;
+}
+
+s-number-field.qty-field {
+  width: 100%;
+  max-width: 7rem;
+}
+
+s-number-field.cost-field {
+  width: 100%;
+  max-width: 8rem;
+}
+
+s-text-field.currency-display-field {
+  width: 100%;
+  max-width: 5rem;
 }
 
 s-button.title-suggest-btn {
