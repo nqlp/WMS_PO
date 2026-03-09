@@ -22,5 +22,5 @@ export function handleRouteError(error: unknown): NextResponse {
     return jsonError(500, error.message);
   }
 
-  return jsonError(500, 'Unknown server error');
+  return jsonError(500, "Unknown server error");
 }
