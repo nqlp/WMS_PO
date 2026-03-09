@@ -12,16 +12,12 @@ export const applyColumnMapping = (
     return rows.map(row => {
         const mappedRow: Record<string, string> = {};
         for (const item of mapping) {
-            if (!item.targetField) {
-                continue;
-            }
             const csvColumn = item.csvColumn;
             const targetField = item.targetField;
             mappedRow[targetField] = row[csvColumn] ?? "";
         }
         return mappedRow;
     });
-
 }
 
 export function parseCsvHeaders(csvContent: string): ParseCsvData {
