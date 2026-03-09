@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-
 import { requireShopifySession } from '@/lib/auth/require-auth';
 import { handleRouteError } from '@/lib/http';
 import { prisma } from '@/lib/prisma';
