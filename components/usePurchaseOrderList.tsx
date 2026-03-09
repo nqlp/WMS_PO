@@ -155,8 +155,8 @@ export default function usePurchaseOrderList() {
                     createdAtStart: nextFilters.createdAtStart || null,
                     createdAtEnd: nextFilters.createdAtEnd || null,
                     importType: nextFilters.importType || null,
-                    importDuties: nextFilters.importDuties ? nextFilters.importDuties === 'true' : null,
-                    hasNotes: nextFilters.hasNotes ? nextFilters.hasNotes === 'true' : null
+                    importDuties: nextFilters.importDuties ? nextFilters.importDuties === "true" : null,
+                    hasNotes: nextFilters.hasNotes ? nextFilters.hasNotes === "true" : null
                 },
                 sorting: {
                     sortBy: nextSortBy,
