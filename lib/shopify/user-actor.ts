@@ -13,7 +13,7 @@ function toStaffMemberGid(userId: string): string | null {
     return null;
   }
 
-  if (userId.startsWith('gid://shopify/StaffMember/')) {
+  if (userId.startsWith("gid://shopify/StaffMember/")) {
     return userId;
   }
 
@@ -52,7 +52,7 @@ export async function resolveUserDisplay(session: AuthenticatedSession): Promise
 
     return fullName || fallback;
   } catch (error) {
-    console.error('Failed to resolve staff member display name:', error);
+    console.error("Failed to resolve staff member display name:", error);
     return fallback;
   }
 }
