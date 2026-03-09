@@ -133,7 +133,11 @@ export default function usePurchaseOrderList() {
         [filters]
     );
 
-    async function savePreferences() {
+    async function savePreferences(
+        nextFilters = filters,
+        nextSortBy = sortBy,
+        nextSortDirection = sortDirection
+    ) {
         if (!bootstrap.csrfToken) {
             return;
         }
@@ -143,20 +147,20 @@ export default function usePurchaseOrderList() {
             csrfToken: bootstrap.csrfToken,
             body: JSON.stringify({
                 filters: {
-                    status: filters.status || null,
-                    vendor: filters.vendor || null,
-                    poNumber: filters.poNumber || null,
-                    expectedDateStart: filters.expectedDateStart || null,
-                    expectedDateEnd: filters.expectedDateEnd || null,
-                    createdAtStart: filters.createdAtStart || null,
-                    createdAtEnd: filters.createdAtEnd || null,
-                    importType: filters.importType || null,
-                    importDuties: filters.importDuties ? filters.importDuties === 'true' : null,
-                    hasNotes: filters.hasNotes ? filters.hasNotes === 'true' : null
+                    status: nextFilters.status || null,
+                    vendor: nextFilters.vendor || null,
+                    poNumber: nextFilters.poNumber || null,
+                    expectedDateStart: nextFilters.expectedDateStart || null,
+                    expectedDateEnd: nextFilters.expectedDateEnd || null,
+                    createdAtStart: nextFilters.createdAtStart || null,
+                    createdAtEnd: nextFilters.createdAtEnd || null,
+                    importType: nextFilters.importType || null,
+                    importDuties: nextFilters.importDuties ? nextFilters.importDuties === 'true' : null,
+                    hasNotes: nextFilters.hasNotes ? nextFilters.hasNotes === 'true' : null
                 },
                 sorting: {
-                    sortBy,
-                    sortDirection
+                    sortBy: nextSortBy,
+                    sortDirection: nextSortDirection
                 }
             })
         });
@@ -196,6 +200,7 @@ export default function usePurchaseOrderList() {
         setSortBy("createdAt");
         setSortDirection("desc");
         loadRows(EMPTY_FILTERS, "createdAt", "desc");
+        void savePreferences(EMPTY_FILTERS, "createdAt", "desc");
     }
 
     return {
