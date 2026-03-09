@@ -7,8 +7,8 @@ import { env } from '@/lib/env';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'EZOKO Purchase Orders',
-  description: 'Embedded Shopify app for purchase order CRUD'
+  title: "EZOKO Purchase Orders",
+  description: "Embedded Shopify app for purchase order CRUD"
 };
 
 export default function RootLayout({
