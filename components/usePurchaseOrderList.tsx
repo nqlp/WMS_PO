@@ -200,7 +200,7 @@ export default function usePurchaseOrderList() {
         setSortBy("createdAt");
         setSortDirection("desc");
         loadRows(EMPTY_FILTERS, "createdAt", "desc");
-        void savePreferences(EMPTY_FILTERS, "createdAt", "desc");
+        savePreferences(EMPTY_FILTERS, "createdAt", "desc");
     }
 
     return {
