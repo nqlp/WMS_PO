@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 import type { AuthenticatedSession } from '@/lib/auth/session-token';
 import { runShopifyGraphql } from '@/lib/shopify/graphql';
 
-const VENDOR_CACHE_TTL_MS = 30 * 60 * 1_000;
+const VENDOR_CACHE_TTL_MS = 30 * 60 * 1000;
 
 interface ProductVendorsResponse {
   productVendors: {
