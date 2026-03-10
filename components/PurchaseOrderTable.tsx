@@ -79,21 +79,20 @@ export function PurchaseOrderTable({ rows, inlineErrors, onCheckIn, onModify }: 
                             <s-table-cell>
                                 <s-stack direction="inline" gap="small">
                                     <s-button
-                                        variant="secondary"
-                                        onClick={() => {
-                                            void onCheckIn(row);
-                                        }}
-                                    >
-                                        Check-in
-                                    </s-button>
-
-                                    <s-button
                                         variant="primary"
                                         onClick={() => {
                                             onModify(row);
                                         }}
                                     >
                                         Modify
+                                    </s-button>
+                                    <s-button
+                                        variant="secondary"
+                                        onClick={() => {
+                                            onCheckIn(row);
+                                        }}
+                                    >
+                                        Check-in
                                     </s-button>
                                 </s-stack>
                                 {inlineErrors[row.poNumber] ? (
