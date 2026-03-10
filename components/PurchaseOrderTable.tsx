@@ -1,5 +1,6 @@
 "use client";
 
+import './PurchaseOrderTable.css';
 import { PoTableHeaders } from '@/components/PurchaseOrderUIOptions';
 
 function statusClass(status: string): string {

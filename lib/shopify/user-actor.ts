@@ -17,6 +17,7 @@ function toStaffMemberGid(userId: string): string | null {
     return userId;
   }
 
+  // Check if the userId is a number
   if (/^\d+$/.test(userId)) {
     return `gid://shopify/StaffMember/${userId}`;
   }

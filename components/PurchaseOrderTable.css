@@ -1,0 +1,31 @@
+.status-pill {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.status-open {
+  background: #e9f4ff;
+  color: #135db5;
+}
+
+.status-checkedin,
+.status-part_received,
+.status-received {
+  background: #edf9ef;
+  color: var(--success);
+}
+
+.status-closed,
+.status-archived {
+  background: #f4f5f7;
+  color: #596273;
+}
+
+.status-error {
+  background: #ffe6ef;
+  color: var(--danger);
+}
