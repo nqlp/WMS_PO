@@ -81,21 +81,22 @@ export default function usePurchaseOrderList() {
                     expectedDateStart: String(prefFilters.expectedDateStart ?? ""),
                     expectedDateEnd: String(prefFilters.expectedDateEnd ?? ""),
                     createdAtStart: String(prefFilters.createdAtStart ?? ""),
-                    createdAtEnd: String(prefFilters.createdAtEnd ?? ''),
+                    createdAtEnd: String(prefFilters.createdAtEnd ?? ""),
                     importDuties:
                         prefFilters.importDuties == null
-                            ? ''
+                            ? ""
                             : Boolean(prefFilters.importDuties)
                                 ? 'true'
                                 : 'false',
-                    importType: String(prefFilters.importType ?? ''),
+                    importType: String(prefFilters.importType ?? ""),
                     hasNotes:
                         prefFilters.hasNotes == null
-                            ? ''
+                            ? ""
                             : Boolean(prefFilters.hasNotes)
-                                ? 'true'
-                                : 'false',
-                    poNumber: String(prefFilters.poNumber ?? '')
+                                ? "true"
+                                : "false",
+                    poNumber: String(prefFilters.poNumber ?? ""),
+                    sku: String(prefFilters.sku ?? "")
                 };
 
                 const prefSorting = prefsResponse.sorting ?? {};

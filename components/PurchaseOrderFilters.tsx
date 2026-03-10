@@ -195,6 +195,16 @@ export function PurchaseOrderFilters({
                     </s-grid-item>
 
                     <s-grid-item>
+                        <s-search-field
+                            label="SKU"
+                            value={filters.sku}
+                            onChange={(event: Event) =>
+                                onFiltersChange({ ...filters, sku: (event.target as HTMLInputElement).value })
+                            }
+                        />
+                    </s-grid-item>
+
+                    <s-grid-item>
                         <s-text-field
                             label="PO Number"
                             className="field"

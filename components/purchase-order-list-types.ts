@@ -12,6 +12,7 @@ export interface FiltersState {
     importType: string;
     hasNotes: "" | "true" | "false";
     poNumber: string;
+    sku: string;
 }
 
 export const EMPTY_FILTERS: FiltersState = {
@@ -24,7 +25,8 @@ export const EMPTY_FILTERS: FiltersState = {
     importDuties: "",
     importType: "",
     hasNotes: "",
-    poNumber: ""
+    poNumber: "",
+    sku: "",
 };
 
 export function getControlValue(event: Event): string {
@@ -50,6 +52,7 @@ export function toQueryParams(filters: FiltersState, sortBy: SortBy, sortDirecti
     if (filters.importType) params.set("importType", filters.importType);
     if (filters.hasNotes) params.set("hasNotes", filters.hasNotes);
     if (filters.poNumber) params.set("poNumber", filters.poNumber);
+    if (filters.sku) params.set("sku", filters.sku);
     params.set("sortBy", sortBy);
     params.set("sortDirection", sortDirection);
 

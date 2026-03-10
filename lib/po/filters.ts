@@ -82,6 +82,17 @@ export function applyFilters(session: AuthenticatedSession, filters: PurchaseOrd
         }
     }
 
+    if (filters.sku) {
+        where.items = {
+            some: {
+                sku: {
+                    contains: filters.sku,
+                    mode: "insensitive"
+                }
+            }
+        };
+    }
+
     applyDateRange(where, "expectedDate", filters.expectedDateStart, filters.expectedDateEnd);
     applyDateRange(where, "createdAt", filters.createdAtStart, filters.createdAtEnd);
 

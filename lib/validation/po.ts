@@ -94,7 +94,8 @@ export const listPurchaseOrderFilterSchema = z.object({
     .enum(['poNumber', 'createdAt', 'expectedDate', 'status', 'vendor'])
     .optional()
     .default('createdAt'),
-  sortDirection: z.enum(['asc', 'desc']).optional().default('desc')
+  sortDirection: z.enum(['asc', 'desc']).optional().default('desc'),
+  sku: z.string().trim().optional()
 });
 
 export type CreatePurchaseOrderInput = z.infer<typeof createPurchaseOrderSchema>;
