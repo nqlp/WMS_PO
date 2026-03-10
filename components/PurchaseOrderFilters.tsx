@@ -198,6 +198,7 @@ export function PurchaseOrderFilters({
                         <s-search-field
                             label="SKU"
                             value={filters.sku}
+                            placeholder="Search by SKU"
                             onChange={(event: Event) =>
                                 onFiltersChange({ ...filters, sku: (event.target as HTMLInputElement).value })
                             }
