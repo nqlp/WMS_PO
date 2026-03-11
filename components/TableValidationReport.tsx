@@ -13,11 +13,11 @@ export default function TableValidationReport({ mode, issues, validRows }: Table
         return (
             <s-table>
                 <s-table-header-row>
-                    <s-table-header>Row #</s-table-header>
-                    <s-table-header>SKU</s-table-header>
-                    <s-table-header>Field</s-table-header>
-                    <s-table-header>Message</s-table-header>
-                    <s-table-header>Severity</s-table-header>
+                    <s-table-row>Row #</s-table-row>
+                    <s-table-row>SKU</s-table-row>
+                    <s-table-row>Field</s-table-row>
+                    <s-table-row>Message</s-table-row>
+                    <s-table-row>Severity</s-table-row>
                 </s-table-header-row>
                 <s-table-body>
                     {issues?.map((issue, index) => (
@@ -37,12 +37,12 @@ export default function TableValidationReport({ mode, issues, validRows }: Table
     return (
         <s-table>
             <s-table-header-row>
-                <s-table-header>Row #</s-table-header>
-                <s-table-header>SKU</s-table-header>
-                <s-table-header>Product Title</s-table-header>
-                <s-table-header>Variant Title</s-table-header>
-                <s-table-header>Order Qty</s-table-header>
-                <s-table-header>Unit Cost</s-table-header>
+                <s-table-row>Row #</s-table-row>
+                <s-table-row>SKU</s-table-row>
+                <s-table-row>Product Title</s-table-row>
+                <s-table-row>Variant Title</s-table-row>
+                <s-table-row>Order Qty</s-table-row>
+                <s-table-row>Unit Cost</s-table-row>
             </s-table-header-row>
             <s-table-body>
                 {validRows?.map((row) => (

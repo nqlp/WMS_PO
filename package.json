@@ -3,15 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate && prisma generate --config=prisma.config.ezoko.ts",
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && prisma generate --config=prisma.config.ezoko.ts && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate": "prisma migrate deploy",
+    "prisma:generate:ezoko": "prisma generate --schema=prisma/schema-ezoko.prisma",
     "test": "vitest run"
   },
   "dependencies": {

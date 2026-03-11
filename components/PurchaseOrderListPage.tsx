@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { withEmbeddedParams } from '@/lib/client/embedded-url';

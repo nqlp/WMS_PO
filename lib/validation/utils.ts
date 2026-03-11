@@ -5,7 +5,7 @@ import { ApiError } from "@/lib/http";
 export function parseOrThrow<TSchema extends z.ZodTypeAny>(
   schema: TSchema,
   value: unknown,
-  message = 'Validation failed'
+  message = "Validation failed"
 ): z.infer<TSchema> {
   const parsed = schema.safeParse(value);
   if (!parsed.success) {

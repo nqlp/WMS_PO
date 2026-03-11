@@ -81,9 +81,9 @@ export function ExcelImportDialog({
 
                     <s-table variant="table">
                         <s-table-header-row>
-                            <s-table-header>CSV Column</s-table-header>
-                            <s-table-header>Value</s-table-header>
-                            <s-table-header>Map To</s-table-header>
+                            <s-table-row>CSV Column</s-table-row>
+                            <s-table-row>Value</s-table-row>
+                            <s-table-row>Map To</s-table-row>
                         </s-table-header-row>
                         <s-table-body>
                             {mapping.map((col, index) => (

@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
   engineType = "client"
 }
 
@@ -8,17 +8,17 @@ datasource db {
 }
 
 model PoHeader {
-  poNumber             BigInt   @id @default(autoincrement()) @map("po_number") @db.BigInt
-  vendor               String   @db.Text
-  status               String   @default("OPEN") @db.Text
-  creationUser         String   @map("creation_user") @db.Text
-  createdAt            DateTime @map("created_at") @db.Timestamptz(6)
-  importDuties         Boolean  @default(false) @map("import_duties")
-  importType           String   @default("NO_IMPORT") @map("Import_type") @db.Text
-  expectedDate         DateTime? @map("expected_date") @db.Date
-  shippingFees         Decimal? @map("shipping_fees") @db.Decimal(12, 2)
-  purchaseOrderCurrency String?  @default("CAD") @map("shipping_fees_currency") @db.Char(3)
-  notes                String?  @map("Notes") @db.Text
+  poNumber              BigInt    @id @default(autoincrement()) @map("po_number") @db.BigInt
+  vendor                String    @db.Text
+  status                String    @default("OPEN") @db.Text
+  creationUser          String    @map("creation_user") @db.Text
+  createdAt             DateTime  @map("created_at") @db.Timestamptz(6)
+  importDuties          Boolean   @default(false) @map("import_duties")
+  importType            String    @default("NO_IMPORT") @map("Import_type") @db.Text
+  expectedDate          DateTime? @map("expected_date") @db.Date
+  shippingFees          Decimal?  @map("shipping_fees") @db.Decimal(12, 2)
+  purchaseOrderCurrency String?   @default("CAD") @map("shipping_fees_currency") @db.Char(3)
+  notes                 String?   @map("Notes") @db.Text
 
   items PoItem[]
   scope PoShopScope?
@@ -57,18 +57,18 @@ model PoItem {
 }
 
 model ShopInstallation {
-  shop                String    @id @db.Text
+  shop                 String   @id @db.Text
   encryptedAccessToken String   @map("encrypted_access_token") @db.Text
-  scopes              String?   @db.Text
-  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  scopes               String?  @db.Text
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@map("shop_installation")
 }
 
 model ShopifyVendorCache {
-  shop       String   @id @db.Text
-  vendors    Json
+  shop        String   @id @db.Text
+  vendors     Json
   refreshedAt DateTime @map("refreshed_at") @db.Timestamptz(6)
 
   @@map("shopify_vendor_cache")
