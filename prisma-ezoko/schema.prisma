@@ -8,13 +8,13 @@ datasource db {
 }
 
 enum Activity {
-    CORRECTION
-    MOVEMENT
-    GOODS_RECEIPT
-    PUTAWAY
-    PICKING
-    GOODS_ISSUE
-    INV_COUNTING
+    CORRECTION    @map("Correction")
+    MOVEMENT      @map("Movement")
+    GOODS_RECEIPT @map("Goods RECEIPT")
+    PUTAWAY       @map("Putaway")
+    PICKING       @map("Picking")
+    GOODS_ISSUE   @map("Goods Issue")
+    INV_COUNTING  @map("Inv Counting")
 }
 
 model StockMovementLog {
@@ -28,7 +28,7 @@ model StockMovementLog {
     srcQty              Int?     @map("src_qty")
     destinationLocation String?  @map("destination_location") @db.Text
     destinationQty      Int?     @map("destination_qty")
-    referenceDoc        String?  @db.Text
+    referenceDoc        String?  @map("reference_doc") @db.Text
 
-    @@map("stock_movement_log")
+    @@map("stock_movements_logs")
 }
