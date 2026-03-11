@@ -1,0 +1,11 @@
+.center-logo-page {
+  min-height: calc(100vh - 2.5rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.center-logo-page img {
+  width: min(70vw, 430px);
+  height: auto;
+}
