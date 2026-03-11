@@ -20,7 +20,7 @@ enum Activity {
 model StockMovementLog {
     id                  String   @id
     createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-    user                String   @db.Text
+    user                String?  @db.Text
     activity            Activity
     barcode             String?  @db.Text
     variantTitle        String?  @map("variant_title") @db.Text
