@@ -12,7 +12,6 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate": "prisma migrate deploy",
-    "prisma:generate:ezoko": "prisma generate --schema=prisma/schema-ezoko.prisma",
     "test": "vitest run"
   },
   "dependencies": {
