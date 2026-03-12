@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "postinstall": "prisma generate && prisma generate --config=prisma.config.ezoko.ts",
+    "postinstall": "prisma generate",
     "dev": "next dev",
     "build": "prisma generate && prisma generate --config=prisma.config.ezoko.ts && next build",
     "start": "next start",
