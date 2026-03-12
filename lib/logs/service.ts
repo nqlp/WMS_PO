@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@prisma/ezoko-client";
+import type { Prisma } from "@prisma/client";
 import { buildLogWhereQuery, LOG_SORT_COLUMN_MAP } from "@/lib/logs/filters";
 import type { LogListFilters } from "@/lib/validation/logs";
 

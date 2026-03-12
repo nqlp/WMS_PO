@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/ezoko-client";
+import { Prisma } from "@prisma/client";
 import { parseDate } from "@/lib/po/filters";
 import type { LogListFilters } from "@/lib/validation/logs";
 

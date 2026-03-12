@@ -94,3 +94,51 @@ model PoShopScope {
   @@index([shop])
   @@map("po_shop_scope")
 }
+
+enum Activity {
+  /// Correction when done through the Product Admin UI extension
+  CORRECTION @map("Correction")
+
+  /// Goods RECEIPT when receiving a purchase order
+  GOODS_RECEIPT @map("Goods RECEIPT")
+
+  /// Movement when moving stock from one bin to another
+  MOVEMENT @map("Movement")
+
+  /// Putaway when moving stock from RECEIVING to a storage bin
+  PUTAWAY @map("Putaway")
+
+  /// Picking when picking a customer order or batch
+  PICKING @map("Picking")
+
+  /// Goods Issue when stock is removed after fulfillment
+  GOODS_ISSUE @map("Goods Issue")
+
+  /// Inv Counting when qty changes due to inventory count discrepancy
+  INV_COUNTING @map("Inv Counting")
+}
+
+model store_integration {
+  store_domain String @id @default("ezokofishing.myshopify.com")
+  access_token String
+}
+
+model StockMovementLog {
+  id                  String   @id @default(uuid())
+  createdAt           DateTime @default(now()) @map("created_at")
+  user                String?
+  activity            Activity
+  barcode             String?
+  variantTitle        String?  @map("variant_title")
+  /// Source location (blank for Correction)
+  srcLocation         String?  @map("src_location")
+  srcQty              Int?     @map("src_qty")
+  /// Destination location (blank for Goods Issue)
+  destinationLocation String?  @map("destination_location")
+  /// Destination qty (blank for Goods Issue)
+  destinationQty      Int?     @map("destination_qty")
+  /// Reference document (blank for Admin UI)
+  referenceDoc        String?  @map("reference_doc")
+
+  @@map("stock_movement_logs")
+}
