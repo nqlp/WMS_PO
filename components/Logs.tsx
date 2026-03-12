@@ -54,10 +54,11 @@ export default function StockMovementsTable({ logs }: { logs: LogRow[] }) {
                             <s-table-cell>{formatDate(log.createdAt)}</s-table-cell>
                             <s-table-cell>
                                 <s-chip
-                                    label={log.activity}
                                     color={activityColor[log.activity] ?? "default"}
                                     size="small"
-                                />
+                                >
+                                    {log.activity}
+                                </s-chip>
                             </s-table-cell>
                             <s-table-cell>{log.user ?? "—"}</s-table-cell>
                             <s-table-cell>{log.barcode ?? "—"}</s-table-cell>
