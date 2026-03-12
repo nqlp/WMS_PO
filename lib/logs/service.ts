@@ -1,5 +1,5 @@
-import { prismaEzoko } from "@/lib/prisma-ezoko";
-import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/ezoko-client";
 import { buildLogWhereQuery, LOG_SORT_COLUMN_MAP } from "@/lib/logs/filters";
 import type { LogListFilters } from "@/lib/validation/logs";
 
@@ -21,7 +21,7 @@ export async function listLogs(filters: LogListFilters): Promise<LogRow[]> {
     const where = buildLogWhereQuery(filters);
     const sortDirection: Prisma.SortOrder = filters.sortDirection ?? "desc";
 
-    const logs = await prismaEzoko.stockMovementLog.findMany({
+    const logs = await prisma.stockMovementLog.findMany({
         where,
         orderBy: {
             [LOG_SORT_COLUMN_MAP[filters.sortBy ?? "createdAt"]]: sortDirection,

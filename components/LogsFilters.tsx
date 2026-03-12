@@ -45,7 +45,7 @@ export function LogsFilters({
                             type="single"
                             label="Date From"
                             value={filters.dateStart}
-                            onChange={(date: string) => onFiltersChange({ ...filters, dateStart: date })}
+                            onChange={(event: Event) => onFiltersChange({ ...filters, dateStart: getLogControlValue(event) })}
                         />
                     </s-grid-item>
 
@@ -54,7 +54,7 @@ export function LogsFilters({
                             type="single"
                             label="Date To"
                             value={filters.dateEnd}
-                            onChange={(date: string) => onFiltersChange({ ...filters, dateEnd: date })}
+                            onChange={(event: Event) => onFiltersChange({ ...filters, dateEnd: getLogControlValue(event) })}
                         />
                     </s-grid-item>
 
